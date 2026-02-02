@@ -1,4 +1,5 @@
 # SENG4430_Project_Group5
+
 ```
               ____----------- _____
 \~~~~~~~~~~/~_--~~~------~~~~~     \
@@ -15,4 +16,14 @@
                           ~-_/_/                  ~~ ~~
 ```
 
-#  Family
+# Family
+
+# Build Tool
+
+The following expects you have `cd`'d into the `/tool` directory.
+
+To generate the `.jar` use `mvn package` this can then be run with `java -cp target/tool-1.0-SNAPSHOT.jar com.tool.Main`
+
+Note: if you don't want to install maven just use the VSCode Maven extension and use that instead.
+
+https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
