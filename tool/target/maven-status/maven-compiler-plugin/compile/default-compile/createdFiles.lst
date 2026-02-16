@@ -1,1 +1,17 @@
+com\tool\app\AuditController.class
+com\tool\app\ProjectContext.class
+com\tool\domain\ReliabilityThresholds.class
+com\tool\metrics\ReliabilityMetricCalculator.class
+com\tool\util\JavaLocCounter$ParseState.class
+com\tool\app\ThresholdManager.class
+com\tool\scan\SpotBugsXmlFindingProvider$SourceRef.class
+com\tool\domain\ReliabilityResult.class
+com\tool\scan\SpotBugsXmlFindingProvider.class
 com\tool\Main.class
+com\tool\reports\JsonReportWriter.class
+com\tool\util\JavaLocCounter.class
+com\tool\scan\FindingProvider.class
+com\tool\domain\LocStats.class
+com\tool\domain\Severity.class
+com\tool\cli\CliArgs.class
+com\tool\domain\Finding.class
