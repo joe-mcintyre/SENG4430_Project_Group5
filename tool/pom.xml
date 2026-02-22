@@ -15,6 +15,11 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+            <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -49,4 +54,16 @@
             </plugin>
         </plugins>
     </build>
+
+
+    <dependencies>
+    
+
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20231013</version>
+    </dependency>
+
+    </dependencies>
 </project>
