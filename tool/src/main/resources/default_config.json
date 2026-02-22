@@ -6,7 +6,6 @@
       {
         "type": "cyclomatic_complexity",
         "thresholds": {
-          "blocker": 0.7,
           "critical": 0.8,
           "major": 0.85,
           "minor": 0.9
