@@ -1,48 +1,32 @@
 package com.tool;
 
 import com.tool.app.AuditController;
-import com.tool.app.ProjectContext;
-import com.tool.app.ThresholdManager;
+import com.tool.app.AuditResult;
 import com.tool.cli.CliArgs;
-import com.tool.domain.ReliabilityResult;
-import com.tool.domain.ReliabilityThresholds;
-import com.tool.metrics.ReliabilityMetricCalculator;
+import com.tool.metrics.MetricResult;
 import com.tool.reports.JsonReportWriter;
-import com.tool.scan.SpotBugsXmlFindingProvider;
-import com.tool.util.JavaLocCounter;
 
 public class Main {
     public static void main(String[] args) {
         try {
             CliArgs cli = CliArgs.parse(args);
 
-            ThresholdManager thresholdManager = new ThresholdManager();
-            ReliabilityThresholds thresholds = thresholdManager.load(cli.thresholdsPath());
+            AuditController controller = new AuditController(cli.configPath());
 
-            ProjectContext context = new ProjectContext(
-                    cli.projectName(),
-                    cli.sourceRoot(),
-                    cli.spotBugsReportPath()
-            );
+            AuditResult auditResult = controller.runAudit(cli.sourceRoot());
 
-            AuditController controller = new AuditController(
-                    new SpotBugsXmlFindingProvider(),
-                    new JavaLocCounter(),
-                    new ReliabilityMetricCalculator(),
-                    new JsonReportWriter()
-            );
+            // Temporary console output for results - can be removed or replaced with more detailed output in the future
+            System.out.println("Audit completed successfully. Results:");
+            auditResult.results().forEach(result -> System.out.println(result.toString()));
 
-            ReliabilityResult result = controller.run(context, thresholds, cli.outputPath());
+            JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
+            writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
+            for (MetricResult res : auditResult.results()) {
+                writer.appendResult(res);
+            }
 
-            System.out.println();
-            System.out.println("=== Reliability Audit Summary ===");
-            System.out.println("Project: " + context.projectName());
-            System.out.println("Status : " + (result.passed() ? "PASS" : "FAIL"));
-            System.out.println("Grade  : " + result.grade());
-            System.out.printf("Density: %.3f (max %.3f)%n",
-                    result.weightedDensityPerKloc(),
-                    thresholds.maxWeightedDensityPerKloc());
-            System.out.println("Report : " + cli.outputPath().toAbsolutePath());
+            writer.writeReport();
+            System.out.println("Report written to: " + cli.outputPath().toString());
 
         } catch (IllegalArgumentException ex) {
             System.err.println("Error: " + ex.getMessage());
