@@ -1,7 +1,6 @@
 package com.tool.domain;
 
 public enum Severity {
-    BLOCKER(5),
     CRITICAL(4),
     MAJOR(3),
     MINOR(2),
@@ -19,6 +18,6 @@ public enum Severity {
 
     @Override
     public String toString() {
-      return name().toLowerCase();
+        return name().toLowerCase();
     }
 }

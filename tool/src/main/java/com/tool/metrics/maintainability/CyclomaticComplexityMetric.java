@@ -20,7 +20,7 @@ public class CyclomaticComplexityMetric extends Metric {
         ArrayList<Finding> violations = new ArrayList<>();
 
         violations.add(new Finding(
-            Severity.BLOCKER,
+            Severity.CRITICAL,
             "src/main/java/com/example/Calculator.java:25",
             "foo/app/bar.java",
             24
