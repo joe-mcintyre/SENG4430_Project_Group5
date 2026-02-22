@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import com.tool.metrics.Metric;
 
 public class Category {
-    private String name;
-    private String description;
-    private ArrayList<Metric> metrics;
+    private final String name;
+    private final String description;
+    private final ArrayList<Metric> metrics;
 
     public Category(String name, String description, ArrayList<Metric> metrics) {
         if(name == null || name.isEmpty()) {

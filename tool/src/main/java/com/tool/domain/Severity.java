@@ -5,8 +5,7 @@ public enum Severity {
     CRITICAL(4),
     MAJOR(3),
     MINOR(2),
-    INFO(1),
-    NONE(0);
+    INFO(1);
 
     private final int rank;
 

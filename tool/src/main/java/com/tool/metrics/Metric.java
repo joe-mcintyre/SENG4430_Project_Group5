@@ -53,5 +53,5 @@ public abstract class Metric {
      * @param projectPath the path to the project being audited
      * @return a MetricResult containing the score and findings for this metric
      */
-    public abstract MetricResult evaluate(Path projectPath);
+    public abstract MetricResult evaluate(Path projectPath) throws Exception;;
 }

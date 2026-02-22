@@ -110,7 +110,7 @@ public final class CliArgs {
 
             Optional:
               --project           Project label in report
-              --config            Properties file with weights/thresholds
+              --config            Path to JSON config file (defaults to built-in config if not provided)
               --output            JSON report output location
             """;
     }
