@@ -6,11 +6,10 @@
       {
         "type": "cyclomatic_complexity",
         "thresholds": {
-          "blocker": 20,
-          "critical": 10,
-          "major": 5,
-          "minor": 2,
-          "info": 0
+          "blocker": 0.7,
+          "critical": 0.8,
+          "major": 0.85,
+          "minor": 0.9
         }
       }
     ]
