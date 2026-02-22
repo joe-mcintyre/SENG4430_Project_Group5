@@ -10,10 +10,18 @@ import com.tool.metrics.ReliabilityMetricCalculator;
 import com.tool.reports.JsonReportWriter;
 import com.tool.scan.SpotBugsXmlFindingProvider;
 import com.tool.util.JavaLocCounter;
+import com.tool.security.SecurityMain;
+
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) {
         try {
+            if (args != null && args.length > 0 && "security".equalsIgnoreCase(args[0])) {
+                SecurityMain.main(Arrays.copyOfRange(args, 1, args.length));
+                return;
+            }
+
             CliArgs cli = CliArgs.parse(args);
 
             ThresholdManager thresholdManager = new ThresholdManager();
