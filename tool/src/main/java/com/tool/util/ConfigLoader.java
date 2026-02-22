@@ -18,7 +18,7 @@ import com.tool.domain.Severity;
 import com.tool.domain.Threshold;
 import com.tool.domain.Category;
 import com.tool.metrics.Metric;
-import com.tool.metrics.maintainablity.CyclomaticComplexityMetric;
+import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
@@ -37,12 +37,16 @@ public class ConfigLoader {
     /**
      * Resolve the configuration file path. If the provided path is null, use the default config file.
      * If the provided path does not exist, throw an exception.
-     * @param configPath the provided configuration file path
+     * @param configArg the provided configuration file path
      * @return the resolved configuration file path
      * @throws RuntimeException if the default config cannot be loaded or if the provided config path is invalid
      */
     public static Path resolveConfigPath(String configArg) {
         if (configArg != null) {
+            Path providedPath = Paths.get(configArg);
+            if (!Files.exists(providedPath)) {
+                throw new RuntimeException("Provided config file does not exist: " + configArg);
+            }
             return Paths.get(configArg);
         }
 
@@ -80,11 +84,7 @@ public class ConfigLoader {
             for (int i = 0; i < categoriesArray.length(); i++) {
                 JSONObject categoryObj = categoriesArray.getJSONObject(i);
                 Category category = parseCategory(categoryObj);
-                if(category != null) {
-                    loadedCategories.add(category);
-                } else {
-                    throw new RuntimeException("Failed to parse category: " + categoryObj.toString());
-                }
+                loadedCategories.add(category);
             }
 
             return loadedCategories;
@@ -107,11 +107,7 @@ public class ConfigLoader {
         for (int j = 0; j < metricArray.length(); j++) {
             JSONObject metricObj = metricArray.getJSONObject(j);
             Metric metric = parseMetric(metricObj);
-            if(metric != null) {
-                metrics.add(metric);
-            } else {
-                throw new RuntimeException("Failed to parse metric: " + metricObj.toString());
-            }
+            metrics.add(metric);
         }
 
         return new Category(name, description, metrics);
@@ -153,18 +149,27 @@ public class ConfigLoader {
         ArrayList<Threshold> thresholds = new ArrayList<>();
 
         for (String severityName : THRESHOLD_REGISTRY) {
-            if(thresholdObject.has(severityName)) {
-                double value = thresholdObject.getDouble(severityName);
-                Severity severity = Severity.valueOf(severityName.toUpperCase());
+            String key = severityName.trim().toLowerCase();
+            if(thresholdObject.has(key)) {
+                double value = thresholdObject.getDouble(key);
+                Severity severity = Severity.valueOf(key.toUpperCase());
                 thresholds.add(new Threshold(severity, value));
-            } else {
-                throw new IllegalArgumentException("Unsupported severity level: " + severityName + ". Supported levels are: " + THRESHOLD_REGISTRY.toString());
-            }
+            } 
         }
 
         // Sort by threshold severity, so the highest severity is first.
-        thresholds.sort((a, b) -> a.severity().compareTo(b.severity()));
-
+        thresholds.sort((a, b) -> Integer.compare(b.severity().rank(), a.severity().rank()));
+        
+        // Ensure it follows the expected order of severity (blocker > critical > major > minor > info)
+        for (int i = 0; i < thresholds.size() - 1; i++) {
+            if (thresholds.get(i).threshold() >= thresholds.get(i + 1).threshold()) {
+                throw new IllegalArgumentException(String.format(
+                    "Threshold values must be in non-decreasing order of severity. Found %s=%.2f and %s=%.2f",
+                    thresholds.get(i).severity(), thresholds.get(i).threshold(),
+                    thresholds.get(i + 1).severity(), thresholds.get(i + 1).threshold()
+                ));
+            }
+        }
         return thresholds;
     }
 

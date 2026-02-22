@@ -1,4 +1,4 @@
-package com.tool.metrics.maintainablity;
+package com.tool.metrics.maintainability;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

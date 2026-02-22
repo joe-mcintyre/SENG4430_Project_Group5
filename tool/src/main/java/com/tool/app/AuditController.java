@@ -25,14 +25,18 @@ public class AuditController {
         } 
 
         AuditResult result = new AuditResult();
-
-        // Iterate through each category and metric, evaluate the metric, and store the results
-        for (Category category : categories) {
-            for (Metric metric : category.metrics()) {
-                MetricResult res = metric.evaluate(projectPath);
-                result.addResult(category, metric, res);
+        try {
+            // Iterate through each category and metric, evaluate the metric, and store the results
+            for (Category category : categories) {
+                for (Metric metric : category.metrics()) {
+                    MetricResult res = metric.evaluate(projectPath);
+                    result.addResult(res);
+                }
             }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to run audit: " + e.getMessage(), e);
         }
+     
         return result;
     }
 
