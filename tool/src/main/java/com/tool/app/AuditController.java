@@ -1,43 +1,43 @@
 package com.tool.app;
 
-import com.tool.domain.Finding;
-import com.tool.domain.LocStats;
-import com.tool.domain.ReliabilityResult;
-import com.tool.domain.ReliabilityThresholds;
-import com.tool.metrics.ReliabilityMetricCalculator;
-import com.tool.reports.JsonReportWriter;
-import com.tool.scan.FindingProvider;
-import com.tool.util.JavaLocCounter;
-
 import java.nio.file.Path;
-import java.util.List;
+import java.util.ArrayList;
+
+import com.tool.domain.Category;
+import com.tool.metrics.Metric;
+import com.tool.metrics.MetricResult;
+import com.tool.util.ConfigLoader;
 
 public class AuditController {
+    private final ArrayList<Category> categories;
 
-    private final FindingProvider findingProvider;
-    private final JavaLocCounter locCounter;
-    private final ReliabilityMetricCalculator calculator;
-    private final JsonReportWriter reportWriter;
+    public AuditController(Path configPath) {
+        if(configPath == null) {
+            throw new IllegalArgumentException("Config path cannot be null");
+        }
 
-    public AuditController(FindingProvider findingProvider,
-                           JavaLocCounter locCounter,
-                           ReliabilityMetricCalculator calculator,
-                           JsonReportWriter reportWriter) {
-        this.findingProvider = findingProvider;
-        this.locCounter = locCounter;
-        this.calculator = calculator;
-        this.reportWriter = reportWriter;
+        this.categories = ConfigLoader.loadCategories(configPath);
     }
 
-    public ReliabilityResult run(ProjectContext project,
-                                 ReliabilityThresholds thresholds,
-                                 Path outputPath) throws Exception {
-        LocStats locStats = locCounter.count(project.sourceRoot());
-        List<Finding> findings = findingProvider.load(project.spotbugsReport());
+    public AuditResult runAudit(Path projectPath) {
+        if(projectPath == null) {
+            throw new IllegalArgumentException("Project path cannot be null");
+        } 
 
-        ReliabilityResult result = calculator.calculate(findings, locStats, thresholds);
+        AuditResult result = new AuditResult();
 
-        reportWriter.write(outputPath, project, locStats, thresholds, result);
+        // Iterate through each category and metric, evaluate the metric, and store the results
+        for (Category category : categories) {
+            for (Metric metric : category.metrics()) {
+                MetricResult res = metric.evaluate(projectPath);
+                result.addResult(category, metric, res);
+            }
+        }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("CategoryManager{categories=%s}", categories.toString());
     }
 }

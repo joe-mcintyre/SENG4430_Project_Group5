@@ -22,7 +22,9 @@
 
 The following expects you have `cd`'d into the `/tool` directory.
 
-To generate the `.jar` use `mvn package` this can then be run with `java -cp target/tool-1.0-SNAPSHOT.jar com.tool.Main`
+To generate the `.jar` use `mvn package` this can then be run with:
+
+`java -jar target/quality-auditor-tool-1.0.0-jar-with-dependencies.jar --source .`
 
 Note: if you don't want to install maven just use the VSCode Maven extension and use that instead.
 

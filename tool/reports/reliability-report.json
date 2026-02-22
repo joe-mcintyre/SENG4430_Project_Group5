@@ -1,0 +1,17 @@
+{
+  "metadata": "projectPath.",
+  "results": [
+    {
+      "severity": "info",
+      "score": 0,
+      "findings": [
+        {
+          "severity": "blocker",
+          "file": "foo/app/bar.java",
+          "line": 24,
+          "message": "src/main/java/com/example/Calculator.java:25"
+        }
+      ]
+    }
+  ]
+}
