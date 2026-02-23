@@ -19,19 +19,23 @@ import com.tool.domain.Threshold;
 import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
+import com.tool.metrics.security.DependencyVulnerabilityRiskMetric;
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
  */
 public class ConfigLoader {
     public static final String CONFIG_FILE_PATH = "default_config.json";
-    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("blocker", "critical", "major", "minor", "info");
+    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("critical", "major", "minor", "info");
 
     // Add new metrics here
     private static final Map<String, Function<ArrayList<Threshold>, Metric>> METRIC_REGISTRY =
         Map.of(
             "cyclomatic_complexity",
-            CyclomaticComplexityMetric::new
+            CyclomaticComplexityMetric::new,
+            "dependency_vulnerability_risk", 
+            DependencyVulnerabilityRiskMetric::new
+        
         );
 
     /**

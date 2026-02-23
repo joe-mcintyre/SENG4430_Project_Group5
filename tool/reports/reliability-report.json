@@ -1,13 +1,24 @@
 {
-  "metadata": "Tool version: 1.0.0, Audit timestamp: 2026-02-22T09:45:36.202947500Z",
-  "results": [{
-    "severity": "blocker",
-    "score": 0,
-    "findings": [{
-      "severity": "blocker",
-      "file": "foo/app/bar.java",
-      "line": 24,
-      "message": "src/main/java/com/example/Calculator.java:25"
-    }]
-  }]
+  "metadata": "Tool version: 1.0.0, Audit timestamp: 2026-02-23T04:37:03.864528Z",
+  "results": [
+    {
+      "severity": "critical",
+      "score": 0,
+      "findings": [{
+        "severity": "critical",
+        "file": "foo/app/bar.java",
+        "line": 24,
+        "message": "src/main/java/com/example/Calculator.java:25"
+      }]
+    },
+    {
+      "severity": "critical",
+      "score": 0,
+      "findings": [{
+        "severity": "critical",
+        "file": "dependency-check-report.xml",
+        "message": "Placeholder: dependency vulnerability scan not yet implemented"
+      }]
+    }
+  ]
 }
