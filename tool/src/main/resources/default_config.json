@@ -1,7 +1,7 @@
 [
   {
     "category": "Maintainability",
-    "description": "Measures the maintainability of the project.",
+    "description": "Measures the maintainability of the system.",
     "metrics": [
       {
         "type": "cyclomatic_complexity",
