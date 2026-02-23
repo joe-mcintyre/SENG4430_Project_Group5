@@ -29,3 +29,10 @@ To generate the `.jar` use `mvn package` this can then be run with:
 Note: if you don't want to install maven just use the VSCode Maven extension and use that instead.
 
 https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
+
+
+Brandon C references
+https://dependency-check.github.io/DependencyCheck/
+https://dependency-check.github.io/DependencyCheck/general/thereport.html
+https://github.com/dependency-check/DependencyCheck
+https://nvd.nist.gov/vuln-metrics/cvss#
