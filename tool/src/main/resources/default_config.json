@@ -12,5 +12,19 @@
         }
       }
     ]
+  },
+  {
+    "category": "Security",
+    "description": "Measures dependency vulnerability risk based on a Dependency-Check report.",
+    "metrics": [
+      {
+        "type": "dependency_vulnerability_risk",
+        "thresholds": {
+          "critical": 0.8,
+          "major": 0.85,
+          "minor": 0.9
+        }
+      }
+    ]
   }
 ]
