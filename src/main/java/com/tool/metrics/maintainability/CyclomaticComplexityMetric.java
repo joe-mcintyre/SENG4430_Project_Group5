@@ -52,7 +52,7 @@ public class CyclomaticComplexityMetric extends Metric {
             averageComplexity = (double) totalComplexity / methodCount;
         }
 
-        return new MetricResult(averageComplexity, violations, thresholds());
+        return new MetricResult(this, averageComplexity, violations, thresholds());
     }
 
     /**
@@ -170,6 +170,7 @@ public class CyclomaticComplexityMetric extends Metric {
 
             @Override
             public void visit(BinaryExpr n, Void arg) {
+                // AND and OR both add another possible program flow
                 if (n.getOperator() == BinaryExpr.Operator.AND ||
                     n.getOperator() == BinaryExpr.Operator.OR) {
                     complexity++;

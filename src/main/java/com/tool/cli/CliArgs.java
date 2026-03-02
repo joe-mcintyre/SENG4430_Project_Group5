@@ -36,7 +36,7 @@ public final class CliArgs {
         Path configPath = ConfigLoader.resolveConfigPath(values.get("--config"));
 
         Path outputPath = Paths.get(
-                values.getOrDefault("--output", "reports/reliability-report.json")
+                values.getOrDefault("--output", "reports/reliability-report.html")
         );
 
         String defaultProject =

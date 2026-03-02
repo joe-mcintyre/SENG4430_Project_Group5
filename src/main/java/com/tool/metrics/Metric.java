@@ -3,6 +3,7 @@ package com.tool.metrics;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+import com.tool.domain.Category;
 import com.tool.domain.Threshold;
 
 /**
@@ -14,6 +15,7 @@ public abstract class Metric {
     private final ArrayList<Threshold> thresholds; 
     private final String name;
     private final String description;
+    private Category category; // The parent category
 
     /**
      * Create a new metric with the given thresholds, name, and description.
@@ -30,10 +32,13 @@ public abstract class Metric {
             throw new IllegalArgumentException("Description cannot be null or empty");
         }
         
-        // Sort by threshold severity, so the highest severity is first. 
         this.thresholds = new ArrayList<>(thresholds);
         this.name = name;
         this.description = description;
+    }
+
+    public Category category(){
+        return category;
     }
 
     public String name(){
@@ -46,6 +51,10 @@ public abstract class Metric {
 
     public ArrayList<Threshold> thresholds() {
         return thresholds;
+    }
+    
+    public void setCategory(Category category){
+        this.category = category;
     }
 
     /**

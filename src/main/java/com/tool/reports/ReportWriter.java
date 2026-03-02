@@ -1,9 +1,15 @@
 package com.tool.reports;
 
-import com.tool.metrics.MetricResult;
+import java.nio.file.Path;
 
-public interface ReportWriter {
-    void appendMetadata(String metadata);
-    void appendResult(MetricResult result);
-    void writeReport() throws Exception;
+import com.tool.app.AuditResult;
+
+public abstract class ReportWriter {
+    protected final Path reportPath;
+
+    public ReportWriter(Path reportPath){
+        this.reportPath = reportPath;
+    }
+
+    abstract void writeReport(AuditResult auditResult) throws Exception;
 }

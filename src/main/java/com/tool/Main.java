@@ -4,7 +4,7 @@ import com.tool.app.AuditController;
 import com.tool.app.AuditResult;
 import com.tool.cli.CliArgs;
 import com.tool.metrics.MetricResult;
-import com.tool.reports.JsonReportWriter;
+import com.tool.reports.HTMLReportWriter;
 
 public class Main {
     public static void main(String[] args) {
@@ -19,14 +19,17 @@ public class Main {
             System.out.println("Audit completed successfully. Results:");
             auditResult.results().forEach(result -> System.out.println(result.toString()));
 
-            JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
-            writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
-            for (MetricResult res : auditResult.results()) {
-                writer.appendResult(res);
-            }
+            HTMLReportWriter writer = new HTMLReportWriter(cli.outputPath());
+            writer.writeReport(auditResult);
 
-            writer.writeReport();
-            System.out.println("Report written to: " + cli.outputPath().toString());
+            // JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
+            // writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
+            // for (MetricResult res : auditResult.results()) {
+            //     writer.appendResult(res);
+            // }
+
+            // writer.writeReport();
+            // System.out.println("Report written to: " + cli.outputPath().toString());
 
         } catch (IllegalArgumentException ex) {
             System.err.println("Error: " + ex.getMessage());

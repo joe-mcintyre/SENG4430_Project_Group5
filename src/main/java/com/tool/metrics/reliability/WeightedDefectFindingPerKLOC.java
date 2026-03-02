@@ -184,7 +184,7 @@ public class WeightedDefectFindingPerKLOC extends Metric {
             ));
         }
 
-        return new MetricResult(finalScore, findings, thresholds());
+        return new MetricResult(this, finalScore, findings, thresholds());
     }
 
     private void resetState() {

@@ -27,7 +27,6 @@ import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
  */
 public class ConfigLoader {
     public static final String CONFIG_FILE_PATH = "default_config.json";
-    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("blocker", "critical", "major", "minor", "info");
 
     // Add new metrics here
     private static final Map<String, Function<ArrayList<Threshold>, Metric>> METRIC_REGISTRY =
@@ -114,7 +113,11 @@ public class ConfigLoader {
             metrics.add(metric);
         }
 
-        return new Category(name, description, metrics);
+        Category cat = new Category(name, description, metrics);
+        for (Metric metric : metrics) {
+            metric.setCategory(cat);
+        }
+        return cat;
     }
 
     /**
@@ -152,7 +155,7 @@ public class ConfigLoader {
 
         ArrayList<Threshold> thresholds = new ArrayList<>();
 
-        for (String severityName : THRESHOLD_REGISTRY) {
+        for (String severityName : Threshold.THRESHOLD_REGISTRY) {
             String key = severityName.trim().toLowerCase();
             if(thresholdObject.has(key)) {
                 double value = thresholdObject.getDouble(key);

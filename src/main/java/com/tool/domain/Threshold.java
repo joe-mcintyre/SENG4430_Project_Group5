@@ -1,8 +1,14 @@
 package com.tool.domain;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Threshold implements Comparable<Threshold> {
     private final Severity severity;
     private final double value;
+
+    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("blocker", "critical", "major", "minor", "info");
+
 
     public Threshold(Severity severity, double value) {
         if (severity == null) {
@@ -36,6 +42,6 @@ public class Threshold implements Comparable<Threshold> {
 
     @Override
     public String toString() {
-        return String.format("Threshold{severity='%s', threshold=%.2f}", severity, value);
+        return severity.toString();
     }
 }
