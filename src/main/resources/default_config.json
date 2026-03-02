@@ -12,5 +12,19 @@
         }
       }
     ]
+  },
+  {
+    "category": "Reliability",
+    "description": "Measures reliability using SpotBugs findings density per KLOC.",
+    "metrics": [
+      {
+        "type": "reliability_findings_density",
+        "thresholds": {
+          "critical": 0.25,
+          "major": 0.50,
+          "minor": 0.75
+        }
+      }
+    ]
   }
 ]

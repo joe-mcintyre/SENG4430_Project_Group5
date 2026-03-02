@@ -106,7 +106,7 @@ public class CyclomaticComplexityMetric extends Metric {
                         path + ":" +
                         method.getBegin().map(p -> p.line).orElse(-1),
                         method.getNameAsString(),
-                        complexity
+                        method.getBegin().map(p -> p.line).orElse(-1)
                     ));
 
                     // Report only the highest threshold.

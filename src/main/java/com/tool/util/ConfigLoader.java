@@ -19,6 +19,8 @@ import com.tool.domain.Threshold;
 import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
+import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
+
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
@@ -31,7 +33,9 @@ public class ConfigLoader {
     private static final Map<String, Function<ArrayList<Threshold>, Metric>> METRIC_REGISTRY =
         Map.of(
             "cyclomatic_complexity",
-            CyclomaticComplexityMetric::new
+            CyclomaticComplexityMetric::new,
+            "reliability_findings_density",
+            WeightedDefectFindingPerKLOC::new
         );
 
     /**
