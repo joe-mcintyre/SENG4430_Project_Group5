@@ -159,14 +159,26 @@ public class ConfigLoader {
 
         // Sort by threshold severity, so the highest severity is first.
         thresholds.sort((a, b) -> Integer.compare(b.severity().rank(), a.severity().rank()));
-        
-        // Ensure it follows the expected order of severity (blocker > critical > major > minor > info)
+
+        // Ensure it follows a consistent order.
+        int order = 0;
+        boolean err = false;
         for (int i = 0; i < thresholds.size() - 1; i++) {
-            if (thresholds.get(i).threshold() >= thresholds.get(i + 1).threshold()) {
+            int increasing = thresholds.get(i).compareTo(thresholds.get(i + 1));
+            // Check its not mixing increasing and decreasing thresholds.
+            if (increasing == 1) {
+                if(order == -1) err = true;
+                order = 1;
+            } else if (increasing == -1) {
+                if(order == 1) err = true;
+                order = -1;
+            } 
+
+            if(err){
                 throw new IllegalArgumentException(String.format(
-                    "Threshold values must be in non-decreasing order of severity. Found %s=%.2f and %s=%.2f",
-                    thresholds.get(i).severity(), thresholds.get(i).threshold(),
-                    thresholds.get(i + 1).severity(), thresholds.get(i + 1).threshold()
+                    "Threshold values must be in consistent order of either increasing and decreasing cannot be mixed. Found %s=%.2f and %s=%.2f",
+                    thresholds.get(i).severity(), thresholds.get(i).value(),
+                    thresholds.get(i + 1).severity(), thresholds.get(i + 1).value()
                 ));
             }
         }

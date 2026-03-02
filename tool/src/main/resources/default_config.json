@@ -6,9 +6,9 @@
       {
         "type": "cyclomatic_complexity",
         "thresholds": {
-          "critical": 0.8,
-          "major": 0.85,
-          "minor": 0.9
+          "critical": 8,
+          "major": 7,
+          "minor": 6
         }
       }
     ]

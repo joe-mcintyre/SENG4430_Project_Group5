@@ -1,13 +1,13 @@
 {
-  "metadata": "Tool version: 1.0.0, Audit timestamp: 2026-02-22T09:45:36.202947500Z",
+  "metadata": "Tool version: 1.0.0, Audit timestamp: 2026-03-02T00:08:27.340244Z",
   "results": [{
-    "severity": "blocker",
-    "score": 0,
+    "severity": "critical",
+    "score": 2,
     "findings": [{
-      "severity": "blocker",
-      "file": "foo/app/bar.java",
-      "line": 24,
-      "message": "src/main/java/com/example/Calculator.java:25"
+      "severity": "critical",
+      "file": ".\\src\\main\\java\\com\\tool\\util\\ConfigLoader.java:144",
+      "line": 10,
+      "message": "The method \"resolveThresholds\" has a cyclomatic complexity of 10"
     }]
   }]
 }
