@@ -1,0 +1,16 @@
+[
+  {
+    "category": "Maintainability",
+    "description": "Measures the maintainability of the system.",
+    "metrics": [
+      {
+        "type": "cyclomatic_complexity",
+        "thresholds": {
+          "critical": 0.8,
+          "major": 0.85,
+          "minor": 0.9
+        }
+      }
+    ]
+  }
+]
