@@ -2,7 +2,6 @@ package com.tool.metrics;
 
 import java.util.ArrayList;
 
-
 import com.tool.domain.Finding;
 import com.tool.domain.Threshold;
 
@@ -11,14 +10,21 @@ import com.tool.domain.Threshold;
  * and any findings associated with the metric evaluation.
  */
 public class MetricResult {
+    private final Metric metric;
     private final double score;
     private final Threshold mostSevereThreshold;
     private final ArrayList<Finding> findings;
 
-    public MetricResult(double score, ArrayList<Finding> findings, ArrayList<Threshold> thresholds) {
+    public MetricResult(Metric metric, double score, ArrayList<Finding> findings,
+                        ArrayList<Threshold> thresholds) {
+        this.metric = metric;
         this.score = score;
         this.findings = findings;
         this.mostSevereThreshold = evaluateSeverity(thresholds);
+    }
+
+    public Metric metric(){
+        return metric;
     }
 
     public double score() {
@@ -41,6 +47,7 @@ public class MetricResult {
     private Threshold evaluateSeverity(ArrayList<Threshold> thresholds) {
         for (Threshold threshold : thresholds) {
             if (threshold.isMet(score)) {
+                System.out.println("Highest "+ threshold+ "Score " +score);
                 return threshold;
             }
         }

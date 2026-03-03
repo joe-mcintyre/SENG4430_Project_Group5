@@ -1,26 +1,29 @@
 package com.tool.domain;
 
-public class Threshold {
-    private final Severity severity;
-    private final double threshold;
+import java.util.Arrays;
+import java.util.List;
 
-    public Threshold(Severity severity, double threshold) {
+public class Threshold implements Comparable<Threshold> {
+    private final Severity severity;
+    private final double value;
+
+    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("blocker", "critical", "major", "minor", "info");
+
+
+    public Threshold(Severity severity, double value) {
         if (severity == null) {
             throw new IllegalArgumentException("Severity cannot be null");
-        } else if (threshold < 0 || threshold > 1) {
-            throw new IllegalArgumentException("Threshold must be between 0 and 1");
         }
-
         this.severity = severity;
-        this.threshold = threshold;
+        this.value = value;
     }   
 
     public Severity severity() {
         return severity;
     }
 
-    public double threshold() {
-        return threshold;
+    public double value() {
+        return value;
     }
 
     /**
@@ -29,11 +32,16 @@ public class Threshold {
      * @return true if the score meets or exceeds the threshold, false otherwise
      */
     public boolean isMet(double score) {
-        return score <= threshold;
+        return score <= value;
+    }
+
+    @Override
+    public int compareTo(Threshold other) {
+        return Double.compare(this.value, other.value);
     }
 
     @Override
     public String toString() {
-        return String.format("Threshold{severity='%s', threshold=%.2f}", severity, threshold);
+        return severity.toString();
     }
 }

@@ -19,19 +19,22 @@ import com.tool.domain.Threshold;
 import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
+import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
+
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
  */
 public class ConfigLoader {
     public static final String CONFIG_FILE_PATH = "default_config.json";
-    public static final List<String> THRESHOLD_REGISTRY = Arrays.asList("blocker", "critical", "major", "minor", "info");
 
     // Add new metrics here
     private static final Map<String, Function<ArrayList<Threshold>, Metric>> METRIC_REGISTRY =
         Map.of(
             "cyclomatic_complexity",
-            CyclomaticComplexityMetric::new
+            CyclomaticComplexityMetric::new,
+            "reliability_findings_density",
+            WeightedDefectFindingPerKLOC::new
         );
 
     /**
@@ -110,7 +113,11 @@ public class ConfigLoader {
             metrics.add(metric);
         }
 
-        return new Category(name, description, metrics);
+        Category cat = new Category(name, description, metrics);
+        for (Metric metric : metrics) {
+            metric.setCategory(cat);
+        }
+        return cat;
     }
 
     /**
@@ -148,7 +155,7 @@ public class ConfigLoader {
 
         ArrayList<Threshold> thresholds = new ArrayList<>();
 
-        for (String severityName : THRESHOLD_REGISTRY) {
+        for (String severityName : Threshold.THRESHOLD_REGISTRY) {
             String key = severityName.trim().toLowerCase();
             if(thresholdObject.has(key)) {
                 double value = thresholdObject.getDouble(key);
@@ -159,14 +166,26 @@ public class ConfigLoader {
 
         // Sort by threshold severity, so the highest severity is first.
         thresholds.sort((a, b) -> Integer.compare(b.severity().rank(), a.severity().rank()));
-        
-        // Ensure it follows the expected order of severity (blocker > critical > major > minor > info)
+
+        // Ensure it follows a consistent order.
+        int order = 0;
+        boolean err = false;
         for (int i = 0; i < thresholds.size() - 1; i++) {
-            if (thresholds.get(i).threshold() >= thresholds.get(i + 1).threshold()) {
+            int increasing = thresholds.get(i).compareTo(thresholds.get(i + 1));
+            // Check its not mixing increasing and decreasing thresholds.
+            if (increasing == 1) {
+                if(order == -1) err = true;
+                order = 1;
+            } else if (increasing == -1) {
+                if(order == 1) err = true;
+                order = -1;
+            } 
+
+            if(err){
                 throw new IllegalArgumentException(String.format(
-                    "Threshold values must be in non-decreasing order of severity. Found %s=%.2f and %s=%.2f",
-                    thresholds.get(i).severity(), thresholds.get(i).threshold(),
-                    thresholds.get(i + 1).severity(), thresholds.get(i + 1).threshold()
+                    "Threshold values must be in consistent order of either increasing and decreasing cannot be mixed. Found %s=%.2f and %s=%.2f",
+                    thresholds.get(i).severity(), thresholds.get(i).value(),
+                    thresholds.get(i + 1).severity(), thresholds.get(i + 1).value()
                 ));
             }
         }

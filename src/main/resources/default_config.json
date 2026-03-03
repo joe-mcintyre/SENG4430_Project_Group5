@@ -1,14 +1,28 @@
 [
   {
     "category": "Maintainability",
-    "description": "Measures the maintainability of the system.",
+    "description": "Measures the maintainability of the project.",
     "metrics": [
       {
         "type": "cyclomatic_complexity",
         "thresholds": {
-          "critical": 0.8,
-          "major": 0.85,
-          "minor": 0.9
+          "critical": 14,
+          "major": 7,
+          "minor": 6
+        }
+      }
+    ]
+  },
+  {
+    "category": "Reliability",
+    "description": "Measures reliability using SpotBugs findings density per KLOC.",
+    "metrics": [
+      {
+        "type": "reliability_findings_density",
+        "thresholds": {
+          "critical": 0.25,
+          "major": 0.50,
+          "minor": 0.75
         }
       }
     ]
