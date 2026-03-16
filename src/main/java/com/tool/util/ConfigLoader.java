@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,9 +17,9 @@ import com.tool.domain.Severity;
 import com.tool.domain.Threshold;
 import com.tool.domain.Category;
 import com.tool.metrics.Metric;
+import java.util.function.BiFunction;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
-import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
-
+import com.tool.metrics.availability.PortabilityPassRateMetric;
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
@@ -29,14 +28,17 @@ public class ConfigLoader {
     public static final String CONFIG_FILE_PATH = "default_config.json";
 
     // Add new metrics here
-    private static final Map<String, Function<ArrayList<Threshold>, Metric>> METRIC_REGISTRY =
+    private static final Map<String, BiFunction<ArrayList<Threshold>, JSONObject, Metric>> METRIC_REGISTRY =
         Map.of(
             "cyclomatic_complexity",
-            CyclomaticComplexityMetric::new,
-            "reliability_findings_density",
-            WeightedDefectFindingPerKLOC::new
-        );
+            (thresholds, metricObj) -> new CyclomaticComplexityMetric(thresholds),
 
+            "portability_pass_rate",
+            (thresholds, metricObj) -> new PortabilityPassRateMetric(
+                thresholds,
+                metricObj.getJSONObject("settings")
+            )
+        );
     /**
      * Resolve the configuration file path. If the provided path is null, use the default config file.
      * If the provided path does not exist, throw an exception.
@@ -138,7 +140,7 @@ public class ConfigLoader {
             throw new RuntimeException("Metric must have at least one threshold: " + metricObj.toString());
         }
 
-        return resolveMetric(type, thresholds);
+        return resolveMetric(type, thresholds, metricObj);
     }
 
     /**
@@ -199,13 +201,18 @@ public class ConfigLoader {
      * @return the resolved Metric object
      * @throws IllegalArgumentException if the metric type is null, empty, or not supported by the registry
      */
-    public static Metric resolveMetric(String type, ArrayList<Threshold> thresholds) {
-        if (type == null || type.isEmpty())
+    public static Metric resolveMetric(String type, ArrayList<Threshold> thresholds, JSONObject metricObj) {
+        if (type == null || type.isEmpty()) {
             throw new IllegalArgumentException("Metric type cannot be null or empty");
+        }
 
-        if (!METRIC_REGISTRY.containsKey(type))
-            throw new IllegalArgumentException("Unsupported metric type: " + type + ". Supported types are: " + METRIC_REGISTRY.keySet().toString());
+        if (!METRIC_REGISTRY.containsKey(type)) {
+            throw new IllegalArgumentException(
+                "Unsupported metric type: " + type
+                + ". Supported types are: " + METRIC_REGISTRY.keySet()
+            );
+        }
 
-        return METRIC_REGISTRY.get(type).apply(thresholds);
+        return METRIC_REGISTRY.get(type).apply(thresholds, metricObj);
     }
 }
