@@ -4,6 +4,8 @@ import com.tool.app.AuditController;
 import com.tool.app.AuditResult;
 import com.tool.cli.CliArgs;
 import com.tool.reports.HTMLReportWriter;
+import java.nio.file.Path;
+import com.tool.util.DependencyCheckReportResolver;
 
 public class Main {
     public static void main(String[] args) {
@@ -11,7 +13,12 @@ public class Main {
             CliArgs cli = CliArgs.parse(args);
 
             AuditController controller = new AuditController(cli.configPath());
-            AuditResult auditResult = controller.runAudit(cli.sourceRoot(), cli.dependencyReportPath());
+            Path dependencyReportPath = DependencyCheckReportResolver.ensureFreshReportExists(
+                cli.sourceRoot(),
+                cli.dependencyReportPath()
+            );
+
+            AuditResult auditResult = controller.runAudit(cli.sourceRoot(), dependencyReportPath);
 
             // Temporary console output for results - can be removed or replaced with more detailed output in the future
             System.out.println("Audit completed successfully. Results:");

@@ -39,8 +39,8 @@ public final class CliArgs {
         }
 
         Path sourcePath = Paths.get(source);
-            Path dependencyReportPath = resolveDependencyReportPath(
-            sourcePath,
+        Path dependencyReportPath = resolveDependencyReportPath(
+                sourcePath,
                 firstPresent(values, "--dependency-report", "--depcheck-report", "--dependencycheck-report", "-d")
         );
 
@@ -59,10 +59,14 @@ public final class CliArgs {
     private static Map<String, String> parseArgs(String[] args) {
         Map<String, String> values = new HashMap<>();
 
-        if (args == null) return values;
+        if (args == null) {
+            return values;
+        }
 
         for (int i = 0; i < args.length; i++) {
-            if (!args[i].startsWith("-")) continue;
+            if (!args[i].startsWith("-")) {
+                continue;
+            }
 
             String key = args[i];
             String value = "true";
@@ -88,26 +92,11 @@ public final class CliArgs {
     }
 
     private static Path resolveDependencyReportPath(Path sourcePath, String raw) {
-    if (raw != null && !raw.isBlank()) {
-        return Paths.get(raw);
-    }
-
-    if (sourcePath == null) {
+        if (raw != null && !raw.isBlank()) {
+            return Paths.get(raw);
+        }
         return null;
     }
-
-    Path directCandidate = sourcePath.resolve("dependency-check-report.json");
-    if (java.nio.file.Files.exists(directCandidate)) {
-        return directCandidate;
-    }
-
-    Path reportsCandidate = sourcePath.resolve("reports").resolve("dependency-check-report.json");
-    if (java.nio.file.Files.exists(reportsCandidate)) {
-        return reportsCandidate;
-    }
-
-    return null;
-}
 
     public String projectName() {
         return projectName;
@@ -144,7 +133,7 @@ public final class CliArgs {
 
             Optional:
               --project           Project label in report
-              --dependency-report OWASP Dependency-Check JSON report file (required when a security metric is enabled)
+              --dependency-report OWASP Dependency-Check JSON report file
               --config            Path to JSON config file (defaults to built-in config if not provided)
               --output            HTML report output location
             """;
