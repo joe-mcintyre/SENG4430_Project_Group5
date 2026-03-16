@@ -135,6 +135,14 @@ public class CyclomaticComplexityTest {
         assertEquals(5, res.score(), 0.1, "Nested conditionals");
     }
 
+    @Test
+    void testComplicated2(){
+        ArrayList<Threshold> thresholds = new ArrayList<>();
+        CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
+        Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Complex2.java");
+        MetricResult res = c.evaluate(p);
+        assertEquals((double)(5 + 6) / 2, res.score(), 0.1, "Nested conditionals");
+    }
     // Edge cases 
     @Test
     void testNoneValidJavaFile(){
