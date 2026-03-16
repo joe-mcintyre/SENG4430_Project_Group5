@@ -3,7 +3,6 @@ package com.tool;
 import com.tool.app.AuditController;
 import com.tool.app.AuditResult;
 import com.tool.cli.CliArgs;
-import com.tool.metrics.MetricResult;
 import com.tool.reports.HTMLReportWriter;
 
 public class Main {
@@ -12,8 +11,7 @@ public class Main {
             CliArgs cli = CliArgs.parse(args);
 
             AuditController controller = new AuditController(cli.configPath());
-
-            AuditResult auditResult = controller.runAudit(cli.sourceRoot());
+            AuditResult auditResult = controller.runAudit(cli.sourceRoot(), cli.dependencyReportPath());
 
             // Temporary console output for results - can be removed or replaced with more detailed output in the future
             System.out.println("Audit completed successfully. Results:");

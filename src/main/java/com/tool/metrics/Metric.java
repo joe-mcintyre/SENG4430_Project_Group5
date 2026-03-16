@@ -7,15 +7,15 @@ import com.tool.domain.Category;
 import com.tool.domain.Threshold;
 
 /**
- * Abstract class representing a metric that can be evaluated on a project. 
- * Each metric has a name, description, and a list of thresholds that determine 
+ * Abstract class representing a metric that can be evaluated on a project.
+ * Each metric has a name, description, and a list of thresholds that determine
  * the severity of the findings based on the score.
  */
 public abstract class Metric {
-    private final ArrayList<Threshold> thresholds; 
+    private final ArrayList<Threshold> thresholds;
     private final String name;
     private final String description;
-    private Category category; // The parent category
+    private Category category;
 
     /**
      * Create a new metric with the given thresholds, name, and description.
@@ -62,5 +62,9 @@ public abstract class Metric {
      * @param projectPath the path to the project being audited
      * @return a MetricResult containing the score and findings for this metric
      */
-    public abstract MetricResult evaluate(Path projectPath) throws Exception;;
+    public abstract MetricResult evaluate(Path projectPath) throws Exception;
+
+    public MetricResult evaluate(Path projectPath, Path dependencyReportPath) throws Exception {
+        return evaluate(projectPath);
+    }
 }

@@ -10,12 +10,18 @@ import com.tool.util.ConfigLoader;
 public final class CliArgs {
     private final String projectName;
     private final Path sourceRoot;
+    private final Path dependencyReportPath;
     private final Path configPath;
     private final Path outputPath;
 
-    private CliArgs(String projectName, Path sourceRoot, Path configPath, Path outputPath) {
+    private CliArgs(String projectName,
+                    Path sourceRoot,
+                    Path dependencyReportPath,
+                    Path configPath,
+                    Path outputPath) {
         this.projectName = projectName;
         this.sourceRoot = sourceRoot;
+        this.dependencyReportPath = dependencyReportPath;
         this.configPath = configPath;
         this.outputPath = outputPath;
     }
@@ -28,25 +34,26 @@ public final class CliArgs {
         }
 
         String source = firstPresent(values, "--source", "-s");
-
-        if (source == null)
+        if (source == null) {
             throw new IllegalArgumentException("--source is required.");
+        }
 
         Path sourcePath = Paths.get(source);
-        Path configPath = ConfigLoader.resolveConfigPath(values.get("--config"));
-
-        Path outputPath = Paths.get(
-                values.getOrDefault("--output", "reports/reliability-report.html")
+            Path dependencyReportPath = resolveDependencyReportPath(
+            sourcePath,
+                firstPresent(values, "--dependency-report", "--depcheck-report", "--dependencycheck-report", "-d")
         );
 
-        String defaultProject =
-                sourcePath.getFileName() != null
-                        ? sourcePath.getFileName().toString()
-                        : "project";
+        Path configPath = ConfigLoader.resolveConfigPath(values.get("--config"));
+        Path outputPath = Paths.get(values.getOrDefault("--output", "reports/quality-report.html"));
+
+        String defaultProject = sourcePath.getFileName() != null
+                ? sourcePath.getFileName().toString()
+                : "project";
 
         String projectName = values.getOrDefault("--project", defaultProject);
 
-        return new CliArgs(projectName, sourcePath, configPath, outputPath);
+        return new CliArgs(projectName, sourcePath, dependencyReportPath, configPath, outputPath);
     }
 
     private static Map<String, String> parseArgs(String[] args) {
@@ -80,12 +87,38 @@ public final class CliArgs {
         return null;
     }
 
+    private static Path resolveDependencyReportPath(Path sourcePath, String raw) {
+    if (raw != null && !raw.isBlank()) {
+        return Paths.get(raw);
+    }
+
+    if (sourcePath == null) {
+        return null;
+    }
+
+    Path directCandidate = sourcePath.resolve("dependency-check-report.json");
+    if (java.nio.file.Files.exists(directCandidate)) {
+        return directCandidate;
+    }
+
+    Path reportsCandidate = sourcePath.resolve("reports").resolve("dependency-check-report.json");
+    if (java.nio.file.Files.exists(reportsCandidate)) {
+        return reportsCandidate;
+    }
+
+    return null;
+}
+
     public String projectName() {
         return projectName;
     }
 
     public Path sourceRoot() {
         return sourceRoot;
+    }
+
+    public Path dependencyReportPath() {
+        return dependencyReportPath;
     }
 
     public Path configPath() {
@@ -102,16 +135,18 @@ public final class CliArgs {
               java -jar quality-auditor-tool.jar \\
                 --project <name> \\
                 --source <path-to-java-source-root> \\
-                [--config <path-to-quality-auditor.config>] \\
-                [--output <path-to-output-report.json>]
+                [--dependency-report <path-to-dependency-check-report.json>] \\
+                [--config <path-to-config.json>] \\
+                [--output <path-to-output-report.html>]
 
             Required:
               --source            Path to Java source directory (e.g. src/main/java)
 
             Optional:
               --project           Project label in report
+              --dependency-report OWASP Dependency-Check JSON report file (required when a security metric is enabled)
               --config            Path to JSON config file (defaults to built-in config if not provided)
-              --output            JSON report output location
+              --output            HTML report output location
             """;
     }
 }

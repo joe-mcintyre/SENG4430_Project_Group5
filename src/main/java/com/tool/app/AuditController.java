@@ -1,5 +1,6 @@
 package com.tool.app;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
@@ -20,23 +21,29 @@ public class AuditController {
     }
 
     public AuditResult runAudit(Path projectPath) {
+        return runAudit(projectPath, null);
+    }
+
+    public AuditResult runAudit(Path projectPath, Path dependencyReportPath) {
         if(projectPath == null) {
             throw new IllegalArgumentException("Project path cannot be null");
-        } 
+        }
+        if (!Files.exists(projectPath)) {
+            throw new IllegalArgumentException("Project path does not exist: " + projectPath);
+        }
 
         AuditResult result = new AuditResult();
         try {
-            // Iterate through each category and metric, evaluate the metric, and store the results
             for (Category category : categories) {
                 for (Metric metric : category.metrics()) {
-                    MetricResult res = metric.evaluate(projectPath);
+                    MetricResult res = metric.evaluate(projectPath, dependencyReportPath);
                     result.addResult(res);
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to run audit: " + e.getMessage(), e);
         }
-     
+
         return result;
     }
 
