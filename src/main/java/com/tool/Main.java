@@ -14,13 +14,10 @@ public class Main {
             AuditController controller = new AuditController(cli.configPath());
 
             AuditResult auditResult = controller.runAudit(cli.sourceRoot());
-
-            // Temporary console output for results - can be removed or replaced with more detailed output in the future
-            System.out.println("Audit completed successfully. Results:");
-            auditResult.results().forEach(result -> System.out.println(result.toString()));
-
+            
             HTMLReportWriter writer = new HTMLReportWriter(cli.outputPath());
             writer.writeReport(auditResult);
+            System.out.println("Audit completed successfully. Results: file:///"+cli.outputPath());
 
             // JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
             // writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
