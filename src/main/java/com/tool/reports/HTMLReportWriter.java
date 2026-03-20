@@ -124,7 +124,7 @@ public class HTMLReportWriter extends ReportWriter {
 
                         .badge-success {
                             background-color: #2fd334;
-                            color: #fdecea;fdecea
+                            color: #fdecea;
                         }
 
                         table {

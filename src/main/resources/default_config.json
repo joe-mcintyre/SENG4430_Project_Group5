@@ -51,6 +51,24 @@
               "command": ["mvn", "-q", "-DskipTests", "package"],
               "timeout_seconds": 600,
               "fail_severity": "critical"
+            },
+            {
+              "name": "linux-jdk11",
+              "mode": "docker",
+              "docker_image": "maven:3-eclipse-temurin-11",
+              "os": ["windows", "linux", "macos"],
+              "command": ["mvn", "-q", "-DskipTests", "package"],
+              "timeout_seconds": 600,
+              "fail_severity": "critical"
+            },
+            {
+              "name": "linux-jdk8",
+              "mode": "docker",
+              "docker_image": "maven:3-eclipse-temurin-8",
+              "os": ["windows", "linux", "macos"],
+              "command": ["mvn", "-q", "-DskipTests", "package"],
+              "timeout_seconds": 600,
+              "fail_severity": "critical"
             }
           ]
         }
