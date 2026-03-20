@@ -28,11 +28,11 @@ public class Threshold implements Comparable<Threshold> {
 
     /**
      * Check if this threshold is met for the given score.
-     * @param score the score to evaluate against the threshold in the range [0, 1]
+     * @param score the score to evaluate against
      * @return true if the score meets or exceeds the threshold, false otherwise
      */
     public boolean isMet(double score) {
-        return score <= value;
+        return score >= value;
     }
 
     @Override

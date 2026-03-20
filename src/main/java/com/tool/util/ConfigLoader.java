@@ -47,32 +47,16 @@ public class ConfigLoader {
      * @throws RuntimeException if the default config cannot be loaded or if the provided config path is invalid
      */
     public static Path resolveConfigPath(String configArg) {
-        if (configArg != null) {
-            Path providedPath = Paths.get(configArg);
-            if (!Files.exists(providedPath)) {
+        if(configArg != null){
+            Path providedPath = ResourceUtil.getResourcePath(configArg);
+            if (providedPath == null || !Files.exists(providedPath)) {
                 throw new RuntimeException("Provided config file does not exist: " + configArg);
             }
-            return Paths.get(configArg);
+            return providedPath;
         }
 
-        // Load default config from resources and copy to a temp file so Path works
-        try (InputStream is = ConfigLoader.class
-                .getClassLoader()
-                .getResourceAsStream("default_config.json")) {
-
-            if (is == null) {
-                throw new RuntimeException("Default config not found in resources");
-            }
-
-            // Create temp file because Path cannot directly represent jar resources
-            Path tempFile = Files.createTempFile("default_config", ".json");
-            Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
-
-            return tempFile;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Default config loading failed", e);
-        }
+        return ResourceUtil.getResourcePath("default_config.json");
+       
     }
 
     /**
