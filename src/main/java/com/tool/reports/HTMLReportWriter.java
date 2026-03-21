@@ -675,3 +675,4 @@ public class HTMLReportWriter extends ReportWriter {
 
         htmlContent.append("</main>");
     }
+}
