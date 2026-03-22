@@ -47,7 +47,6 @@ public class MetricResult {
     private Threshold evaluateSeverity(ArrayList<Threshold> thresholds) {
         for (Threshold threshold : thresholds) {
             if (threshold.isMet(score)) {
-                System.out.println("Highest "+ threshold+ "Score " +score);
                 return threshold;
             }
         }

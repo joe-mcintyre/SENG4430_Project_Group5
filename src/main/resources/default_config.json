@@ -25,54 +25,44 @@
           "minor": 0.10
         },
         "settings": {
-          "count_skipped_as_failure": true,
+          "count_skipped_as_failure": false,
+          "isolate_workspaces": true,
+          "workspace_excludes": [".git", "target"],
           "targets": [
             {
-              "name": "host-build",
+              "name": "host-jdk17",
               "mode": "local",
-              "command": ["mvn", "-q", "-DskipTests", "package"],
+              "support_level": "required",
+              "weight": 0.15,
+              "command": ["mvn", "-q", "clean", "compile"],
               "timeout_seconds": 600,
               "fail_severity": "major"
             },
             {
               "name": "linux-jdk17",
               "mode": "docker",
+              "support_level": "required",
+              "weight": 0.55,
               "docker_image": "maven:3-eclipse-temurin-17",
               "os": ["windows", "linux", "macos"],
-              "command": ["mvn", "-q", "-DskipTests", "package"],
+              "command": ["mvn", "-q", "clean", "compile"],
               "timeout_seconds": 600,
               "fail_severity": "critical"
             },
             {
               "name": "linux-jdk21",
               "mode": "docker",
+              "support_level": "supported",
+              "weight": 0.30,
               "docker_image": "maven:3-eclipse-temurin-21",
               "os": ["windows", "linux", "macos"],
-              "command": ["mvn", "-q", "-DskipTests", "package"],
+              "command": ["mvn", "-q", "clean", "compile"],
               "timeout_seconds": 600,
-              "fail_severity": "critical"
-            },
-            {
-              "name": "linux-jdk11",
-              "mode": "docker",
-              "docker_image": "maven:3-eclipse-temurin-11",
-              "os": ["windows", "linux", "macos"],
-              "command": ["mvn", "-q", "-DskipTests", "package"],
-              "timeout_seconds": 600,
-              "fail_severity": "critical"
-            },
-            {
-              "name": "linux-jdk8",
-              "mode": "docker",
-              "docker_image": "maven:3-eclipse-temurin-8",
-              "os": ["windows", "linux", "macos"],
-              "command": ["mvn", "-q", "-DskipTests", "package"],
-              "timeout_seconds": 600,
-              "fail_severity": "critical"
+              "fail_severity": "major"
             }
           ]
         }
       }
     ]
   }
-]
+] 

@@ -11,6 +11,7 @@ import com.tool.domain.Finding;
 import com.tool.domain.Threshold;
 import com.tool.metrics.Metric;
 import com.tool.metrics.MetricResult;
+import com.tool.metrics.availability.PortabilityPassRateMetric;
 
 public class HTMLReportWriter extends ReportWriter {
 
@@ -628,8 +629,10 @@ public class HTMLReportWriter extends ReportWriter {
             htmlContent.append("<div class='metric-name'>").append(metric.name()).append("</div>");
 
             htmlContent.append("<div class='badge-group'>");
-            htmlContent.append("<span class='badge badge-score'>Score: ")
-                       .append(String.format("%.2f", metricResult.score()))
+            htmlContent.append("<span class='badge badge-score'>")
+                       .append(formatScoreLabel(metric))
+                       .append(": ")
+                       .append(formatScore(metricResult))
                        .append("</span>");
 
             String badgeClass = highestThreshold == null ? "success" : highestThreshold.toString().toLowerCase();
@@ -674,5 +677,20 @@ public class HTMLReportWriter extends ReportWriter {
         }
 
         htmlContent.append("</main>");
+    }
+
+    private String formatScoreLabel(Metric metric) {
+        if (metric instanceof PortabilityPassRateMetric) {
+            return "Pass Rate";
+        }
+        return "Score";
+    }
+
+    private String formatScore(MetricResult metricResult) {
+        if (metricResult.metric() instanceof PortabilityPassRateMetric) {
+            double passRate = Math.max(0.0, Math.min(1.0, 1.0 - metricResult.score()));
+            return String.format("%.2f%%", passRate * 100.0);
+        }
+        return String.format("%.2f", metricResult.score());
     }
 }

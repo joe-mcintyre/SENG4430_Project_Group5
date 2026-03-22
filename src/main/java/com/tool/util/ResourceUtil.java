@@ -16,7 +16,12 @@ public class ResourceUtil {
      */
     public static Path getResourcePath(String resourceName) {
         try {
-            InputStream is = ResourceUtil.class.getClassLoader().getResourceAsStream(resourceName);
+            if (resourceName == null || resourceName.isBlank()) {
+                return null;
+            }
+
+            String normalizedName = resourceName.replace('\\', '/');
+            InputStream is = ResourceUtil.class.getClassLoader().getResourceAsStream(normalizedName);
 
             if (is == null) {
                 return null;
@@ -24,9 +29,9 @@ public class ResourceUtil {
 
             // Create temp file with same extension as resource
             String suffix = "";
-            int dotIndex = resourceName.lastIndexOf('.');
+            int dotIndex = normalizedName.lastIndexOf('.');
             if (dotIndex >= 0) {
-                suffix = resourceName.substring(dotIndex);
+                suffix = normalizedName.substring(dotIndex);
             }
 
             Path tempFile = Files.createTempFile("resource-", suffix);

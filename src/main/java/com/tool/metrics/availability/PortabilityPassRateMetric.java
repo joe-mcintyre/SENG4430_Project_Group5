@@ -1,12 +1,20 @@
 package com.tool.metrics.availability;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONArray;
@@ -20,22 +28,30 @@ import com.tool.metrics.MetricResult;
 
 public class PortabilityPassRateMetric extends Metric {
 
+    private static final int OUTPUT_LIMIT_CHARS = 200_000;
+    private static final int DOCKER_CHECK_TIMEOUT_SECONDS = 10;
+
     private final ArrayList<Target> targets;
     private final boolean countSkippedAsFailure;
+    private final boolean isolateWorkspaces;
+    private final Set<String> workspaceExcludes;
 
     public PortabilityPassRateMetric(ArrayList<Threshold> thresholds, JSONObject settings) {
         super(
             thresholds,
             "Portability Pass Rate",
-            "Measures availability/portability by running build/test checks across configured OS/JDK targets (host + Docker). Score is failure rate (lower is better)."
+            "Measures portability as a weighted compatibility risk across configured JDK/OS targets."
         );
 
         if (settings == null) {
             throw new IllegalArgumentException("portability_pass_rate settings cannot be null");
         }
 
-        this.countSkippedAsFailure = settings.optBoolean("count_skipped_as_failure", true);
+        this.countSkippedAsFailure = settings.optBoolean("count_skipped_as_failure", false);
+        this.isolateWorkspaces = settings.optBoolean("isolate_workspaces", true);
+        this.workspaceExcludes = parseWorkspaceExcludes(settings.optJSONArray("workspace_excludes"));
         this.targets = parseTargets(settings);
+
         if (this.targets.isEmpty()) {
             throw new IllegalArgumentException("portability_pass_rate requires at least one target in settings.targets");
         }
@@ -47,129 +63,186 @@ public class PortabilityPassRateMetric extends Metric {
             throw new IllegalArgumentException("Project path cannot be null");
         }
 
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Starting portability evaluation");
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Project path: " + projectPath);
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Number of targets to evaluate: " + targets.size());
-
+        Path executionRoot = resolveExecutionRoot(projectPath);
         ArrayList<Finding> findings = new ArrayList<>();
 
         String hostOs = detectOs();
-        boolean dockerAvailable = isDockerAvailable();
-        
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Host OS: " + hostOs);
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Docker available: " + dockerAvailable);
+        DockerStatus dockerStatus = checkDockerAvailability();
 
-        int total = 0;
         int passed = 0;
-        int failed = 0;
+        int compatibilityFailed = 0;
+        int infrastructureFailed = 0;
         int skipped = 0;
+        double totalWeightedTargets = 0.0;
+        double weightedCompatibilityFailures = 0.0;
 
-        for (Target t : targets) {
-            System.out.println("[DEBUG] [PortabilityPassRateMetric] Evaluating target: " + t.name);
-            TargetOutcome outcome = runTarget(t, projectPath, hostOs, dockerAvailable);
-            System.out.println("[DEBUG] [PortabilityPassRateMetric] Target '" + t.name + "' status: " + outcome.status);
-
-            if (outcome.status == Status.SKIPPED) {
-                skipped++;
-                System.out.println("[DEBUG] [PortabilityPassRateMetric] Target '" + t.name + "' skipped: " + outcome.message);
-                if (countSkippedAsFailure) {
-                    total++;
-                    failed++;
-                    System.out.println("[DEBUG] [PortabilityPassRateMetric] Counting skipped target as failure");
-                }
-                findings.add(new Finding(
-                    Severity.INFO,
-                    String.format("Target '%s' skipped: %s", t.name, outcome.message),
-                    projectPath.toString(),
-                    t.name,
-                    null
-                ));
-                continue;
-            }
-
-            total++;
-
-            if (outcome.status == Status.PASSED) {
-                passed++;
-                System.out.println("[DEBUG] [PortabilityPassRateMetric] Target '" + t.name + "' PASSED");
-                findings.add(new Finding(
-                    Severity.INFO,
-                    String.format("Target '%s' PASSED successfully", t.name),
-                    projectPath.toString(),
-                    t.name,
-                    null
-                ));
-                continue;
-            }
-
-            failed++;
-            System.out.println("[DEBUG] [PortabilityPassRateMetric] Target '" + t.name + "' FAILED: " + outcome.detail);
-            findings.add(new Finding(
-                t.failSeverity,
-                String.format("Target '%s' FAILED (%s). %s", t.name, outcome.detail, truncate(outcome.output, 1200)),
-                projectPath.toString(),
-                t.name,
-                null
+        for (Target target : targets) {
+            System.out.println(String.format(
+                Locale.ROOT,
+                "[PORTABILITY] Starting target '%s' (%s, support=%s, weight=%.2f)",
+                target.name,
+                target.mode,
+                target.supportLevel,
+                target.weight
             ));
+            TargetOutcome outcome = runTarget(target, executionRoot, hostOs, dockerStatus);
+            boolean countedInScore = target.contributesToScore()
+                && (outcome.status != Status.SKIPPED || countSkippedAsFailure);
+
+            if (countedInScore) {
+                totalWeightedTargets += target.weight;
+            }
+
+            switch (outcome.status) {
+                case PASSED -> {
+                    passed++;
+                    findings.add(new Finding(
+                        Severity.INFO,
+                        formatTargetMessage(target, outcome, countedInScore),
+                        executionRoot.toString(),
+                        target.name,
+                        null
+                    ));
+                }
+                case COMPATIBILITY_FAILED -> {
+                    compatibilityFailed++;
+                    if (countedInScore) {
+                        weightedCompatibilityFailures += target.weight;
+                    }
+                    findings.add(new Finding(
+                        target.failSeverity,
+                        formatTargetMessage(target, outcome, countedInScore),
+                        executionRoot.toString(),
+                        target.name,
+                        null
+                    ));
+                }
+                case INFRASTRUCTURE_FAILED -> {
+                    infrastructureFailed++;
+                    findings.add(new Finding(
+                        Severity.MAJOR,
+                        formatTargetMessage(target, outcome, false),
+                        executionRoot.toString(),
+                        target.name,
+                        null
+                    ));
+                }
+                case SKIPPED -> {
+                    skipped++;
+                    if (countedInScore) {
+                        weightedCompatibilityFailures += target.weight;
+                    }
+                    findings.add(new Finding(
+                        Severity.INFO,
+                        formatTargetMessage(target, outcome, countedInScore),
+                        executionRoot.toString(),
+                        target.name,
+                        null
+                    ));
+                }
+            }
         }
 
-        double passRate = total == 0 ? 0.0 : ((double) passed / (double) total);
-        double failureRate = clamp01(1.0 - passRate);
-        
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Results - Passed: " + passed + ", Failed: " + failed + ", Skipped: " + skipped + ", Total: " + total);
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Pass Rate: " + String.format("%.3f", passRate));
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Failure Rate (Score): " + String.format("%.3f", failureRate));
+        double riskScore = totalWeightedTargets == 0.0
+            ? 0.0
+            : clamp01(weightedCompatibilityFailures / totalWeightedTargets);
 
-        Severity summaryExpectation = failed > 0 ? Severity.MAJOR : (skipped > 0 ? Severity.INFO : Severity.INFO);
-        findings.add(0, new Finding(
-            summaryExpectation,
-            String.format(
-                "Portability summary: hostOS=%s, dockerAvailable=%s, passed=%d, failed=%d, skipped=%d, totalCounted=%d, passRate=%.3f, failureRate(score)=%.3f",
-                hostOs,
-                dockerAvailable,
-                passed,
-                failed,
-                skipped,
-                total,
-                passRate,
-                failureRate
-            ),
-            projectPath.toString(),
-            "project-wide",
-            null
-        ));
-        
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Total findings: " + findings.size());
-        System.out.println("[DEBUG] [PortabilityPassRateMetric] Portability evaluation complete");
+        return new MetricResult(this, riskScore, findings, thresholds());
+    }
 
-        return new MetricResult(this, failureRate, findings, thresholds());
+    private TargetOutcome runTarget(Target target, Path executionRoot, String hostOs, DockerStatus dockerStatus) throws Exception {
+        if (!target.oses.isEmpty() && !target.oses.contains(hostOs)) {
+            return TargetOutcome.skipped("target not applicable for host OS");
+        }
+
+        if (target.mode == Mode.DOCKER && !dockerStatus.available) {
+            return TargetOutcome.infrastructureFailed("docker-unavailable", dockerStatus.message, "");
+        }
+
+        Path workspace = executionRoot;
+        boolean usingTemporaryWorkspace = target.shouldIsolateWorkspace();
+
+        try {
+            if (usingTemporaryWorkspace) {
+                workspace = createWorkspaceCopy(executionRoot, target.name);
+            }
+
+            if (target.mode == Mode.DOCKER) {
+                return runDockerTarget(target, workspace);
+            }
+
+            return runLocalTarget(target, workspace);
+        } catch (IOException ioe) {
+            return TargetOutcome.infrastructureFailed(
+                "workspace-prepare-failed",
+                "Failed to prepare isolated workspace: " + ioe.getMessage(),
+                ""
+            );
+        } finally {
+            if (usingTemporaryWorkspace) {
+                deleteRecursively(workspace);
+            }
+        }
+    }
+
+    private TargetOutcome runLocalTarget(Target target, Path workspace) throws Exception {
+        List<String> cmd = normalizeLocalCommand(new ArrayList<>(target.command));
+        CommandResult result = execCommand(cmd, workspace, target.timeoutSeconds);
+        return classifyCommandResult(result);
+    }
+
+    private TargetOutcome runDockerTarget(Target target, Path workspace) throws Exception {
+        List<String> cmd = new ArrayList<>();
+        cmd.add("docker");
+        cmd.add("run");
+        cmd.add("--rm");
+        cmd.add("-v");
+        cmd.add(dockerMount(workspace));
+        cmd.add("-w");
+        cmd.add("/workspace");
+        cmd.add(target.dockerImage);
+        cmd.addAll(target.command);
+
+        CommandResult result = execCommand(cmd, null, target.timeoutSeconds);
+        return classifyCommandResult(result);
+    }
+
+    private TargetOutcome classifyCommandResult(CommandResult result) {
+        if (!result.started) {
+            return TargetOutcome.infrastructureFailed("spawn-failed", result.message, result.output);
+        }
+
+        if (result.timedOut) {
+            return TargetOutcome.compatibilityFailed("timeout", "Timed out while running target command", result.output);
+        }
+
+        if (result.exitCode == 0) {
+            return TargetOutcome.passed();
+        }
+
+        return TargetOutcome.compatibilityFailed(
+            "exit-code",
+            "Exit code " + result.exitCode,
+            result.output
+        );
     }
 
     private List<String> normalizeLocalCommand(List<String> cmd) {
-        System.out.println("[DEBUG] [normalizeLocalCommand] Original command: " + cmd);
-        
         if (cmd.isEmpty()) {
-            System.out.println("[DEBUG] [normalizeLocalCommand] Command is empty, returning as-is");
             return cmd;
         }
 
         if (!"windows".equals(detectOs())) {
-            System.out.println("[DEBUG] [normalizeLocalCommand] Not Windows OS, returning as-is");
             return cmd;
         }
 
         String first = cmd.get(0).toLowerCase(Locale.ROOT);
-        System.out.println("[DEBUG] [normalizeLocalCommand] First command element (lowercase): " + first);
-
-        // Common cases that are batch scripts / need shell resolution on Windows.
         boolean isMavenLike =
-                first.equals("mvn") || first.equals("mvn.cmd") || first.equals("mvn.bat") ||
-                first.equals("./mvnw") || first.equals("mvnw") || first.equals("mvnw.cmd") || first.equals("mvnw.bat");
-
-        System.out.println("[DEBUG] [normalizeLocalCommand] Is Maven-like: " + isMavenLike);
+            first.equals("mvn") || first.equals("mvn.cmd") || first.equals("mvn.bat")
+                || first.equals("./mvnw") || first.equals("mvnw") || first.equals("mvnw.cmd")
+                || first.equals("mvnw.bat");
 
         if (!isMavenLike) {
-            System.out.println("[DEBUG] [normalizeLocalCommand] Not Maven-like, returning as-is");
             return cmd;
         }
 
@@ -177,79 +250,10 @@ public class PortabilityPassRateMetric extends Metric {
         wrapped.add("cmd");
         wrapped.add("/c");
         wrapped.addAll(cmd);
-        System.out.println("[DEBUG] [normalizeLocalCommand] Wrapped with cmd /c: " + wrapped);
         return wrapped;
     }
 
-    // -------------------------
-    // Target execution
-    // -------------------------
-
-    private TargetOutcome runTarget(Target t, Path projectPath, String hostOs, boolean dockerAvailable) throws Exception {
-        System.out.println("[DEBUG] [runTarget] Checking target '" + t.name + "' applicability");
-        System.out.println("[DEBUG] [runTarget] Target oses: " + t.oses + ", Mode: " + t.mode);
-        
-        if (!t.oses.isEmpty() && !t.oses.contains(hostOs)) {
-            System.out.println("[DEBUG] [runTarget] Target not applicable for host OS: " + hostOs);
-            return TargetOutcome.skipped("target not applicable for host OS");
-        }
-
-        if (t.mode == Mode.DOCKER) {
-            System.out.println("[DEBUG] [runTarget] Docker mode - checking availability");
-            if (!dockerAvailable) {
-                System.out.println("[DEBUG] [runTarget] Docker not available");
-                return countSkippedAsFailure
-                    ? TargetOutcome.failed("docker-not-available", "Docker is not available on this machine", "")
-                    : TargetOutcome.skipped("docker not available");
-            }
-            System.out.println("[DEBUG] [runTarget] Running Docker target");
-            return runDockerTarget(t, projectPath);
-        }
-
-        System.out.println("[DEBUG] [runTarget] Running local target");
-        return runLocalTarget(t, projectPath);
-    }
-
-    private TargetOutcome runLocalTarget(Target t, Path projectPath) throws Exception {
-        System.out.println("[DEBUG] [runLocalTarget] Target: " + t.name);
-        System.out.println("[DEBUG] [runLocalTarget] Command: " + t.command);
-        List<String> cmd = normalizeLocalCommand(new ArrayList<>(t.command));
-        System.out.println("[DEBUG] [runLocalTarget] Normalized command: " + cmd);
-        return execCommand(cmd, projectPath, t.timeoutSeconds);
-    }
-
-    private TargetOutcome runDockerTarget(Target t, Path projectPath) throws Exception {
-        System.out.println("[DEBUG] [runDockerTarget] Target: " + t.name);
-        System.out.println("[DEBUG] [runDockerTarget] Docker image: " + t.dockerImage);
-        System.out.println("[DEBUG] [runDockerTarget] Command: " + t.command);
-        
-        String mount = dockerMount(projectPath);
-        System.out.println("[DEBUG] [runDockerTarget] Docker mount: " + mount);
-
-        List<String> cmd = new ArrayList<>();
-        cmd.add("docker");
-        cmd.add("run");
-        cmd.add("--rm");
-        cmd.add("-v");
-        cmd.add(mount);
-        cmd.add("-w");
-        cmd.add("/workspace");
-        cmd.add(t.dockerImage);
-
-        // command executed inside container
-        cmd.addAll(t.command);
-        
-        System.out.println("[DEBUG] [runDockerTarget] Full Docker command: " + cmd);
-
-        return execCommand(cmd, null, t.timeoutSeconds);
-    }
-
-   
-    private TargetOutcome execCommand(List<String> cmd, Path workingDir, int timeoutSeconds) throws Exception {
-        System.out.println("[DEBUG] [execCommand] Executing command: " + String.join(" ", cmd));
-        System.out.println("[DEBUG] [execCommand] Working directory: " + (workingDir == null ? "(null - inherited)" : workingDir));
-        System.out.println("[DEBUG] [execCommand] Timeout: " + timeoutSeconds + "s");
-        
+    private CommandResult execCommand(List<String> cmd, Path workingDir, int timeoutSeconds) throws Exception {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
 
@@ -257,63 +261,83 @@ public class PortabilityPassRateMetric extends Metric {
             pb.directory(workingDir.toFile());
         }
 
-        final Process p;
+        final Process process;
         try {
-            System.out.println("[DEBUG] [execCommand] Starting process...");
-            p = pb.start();
-            System.out.println("[DEBUG] [execCommand] Process started successfully");
-        } catch (java.io.IOException ioe) {
-            // This is the exact case you're hitting: CreateProcess error=2, etc.
-            System.out.println("[DEBUG] [execCommand] Failed to start process: " + ioe.getMessage());
-            return TargetOutcome.failed(
-                "spawn-failed",
-                "Failed to start command: " + String.join(" ", cmd) + " (" + ioe.getMessage() + ")",
-                ""
+            process = pb.start();
+        } catch (IOException ioe) {
+            return CommandResult.spawnFailed(
+                "Failed to start command: " + String.join(" ", cmd) + " (" + ioe.getMessage() + ")"
             );
         }
 
-        StringBuilder out = new StringBuilder();
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            int lineCount = 0;
-            while ((line = r.readLine()) != null) {
-                lineCount++;
-                out.append(line).append('\n');
-                if (out.length() > 200_000) {
-                    System.out.println("[DEBUG] [execCommand] Output truncated - exceeded 200KB");
-                    out.append("\n...output truncated...\n");
-                    break;
-                }
-            }
-            System.out.println("[DEBUG] [execCommand] Read " + lineCount + " lines of output");
-        }
+        StringBuilder output = new StringBuilder();
+        Thread outputReader = startOutputReader(process, output);
 
-        boolean finished = p.waitFor(timeoutSeconds, TimeUnit.SECONDS);
+        boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
         if (!finished) {
-            System.out.println("[DEBUG] [execCommand] Process timed out after " + timeoutSeconds + "s");
-            p.destroyForcibly();
-            return TargetOutcome.failed("timeout", "Timed out after " + timeoutSeconds + "s", out.toString());
+            process.destroyForcibly();
+            process.waitFor(5, TimeUnit.SECONDS);
+            outputReader.join(1000);
+            return CommandResult.timedOut(output.toString());
         }
 
-        int code = p.exitValue();
-        System.out.println("[DEBUG] [execCommand] Process exited with code: " + code);
-        if (code == 0) {
-            System.out.println("[DEBUG] [execCommand] Command succeeded");
-            return TargetOutcome.passed();
-        }
-
-        System.out.println("[DEBUG] [execCommand] Command failed with exit code " + code);
-        return TargetOutcome.failed("exit-code", "Exit code " + code, out.toString());
+        outputReader.join(1000);
+        return CommandResult.completed(process.exitValue(), output.toString());
     }
 
-    // -------------------------
-    // Settings parsing
-    // -------------------------
+    private Thread startOutputReader(Process process, StringBuilder output) {
+        Thread reader = new Thread(() -> {
+            try (BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+            )) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (output.length() < OUTPUT_LIMIT_CHARS) {
+                        output.append(line).append('\n');
+                    }
+                }
+                if (output.length() > OUTPUT_LIMIT_CHARS) {
+                    output.setLength(OUTPUT_LIMIT_CHARS);
+                    output.append("\n...output truncated...\n");
+                }
+            } catch (IOException ioe) {
+                if (output.length() < OUTPUT_LIMIT_CHARS) {
+                    output.append("\n[output-read-failed] ").append(ioe.getMessage()).append('\n');
+                }
+            }
+        });
+        reader.setDaemon(true);
+        reader.start();
+        return reader;
+    }
+
+    private DockerStatus checkDockerAvailability() {
+        try {
+            CommandResult result = execCommand(
+                List.of("docker", "info", "--format", "{{.ServerVersion}}"),
+                null,
+                DOCKER_CHECK_TIMEOUT_SECONDS
+            );
+
+            if (!result.started) {
+                return DockerStatus.unavailable(result.message);
+            }
+            if (result.timedOut) {
+                return DockerStatus.unavailable("Docker daemon check timed out");
+            }
+            if (result.exitCode != 0) {
+                return DockerStatus.unavailable("Docker daemon check failed: " + truncate(result.output, 400));
+            }
+
+            String version = truncate(result.output.trim(), 120);
+            return DockerStatus.available(version.isBlank() ? "Docker daemon available" : version);
+        } catch (Exception e) {
+            return DockerStatus.unavailable("Docker check failed: " + e.getMessage());
+        }
+    }
 
     private ArrayList<Target> parseTargets(JSONObject settings) {
-        System.out.println("[DEBUG] [parseTargets] Parsing portability targets from settings");
         JSONArray arr = settings.getJSONArray("targets");
-        System.out.println("[DEBUG] [parseTargets] Found " + arr.length() + " targets");
         ArrayList<Target> result = new ArrayList<>();
 
         for (int i = 0; i < arr.length(); i++) {
@@ -321,6 +345,9 @@ public class PortabilityPassRateMetric extends Metric {
 
             String name = obj.getString("name");
             Mode mode = Mode.valueOf(obj.optString("mode", "LOCAL").trim().toUpperCase(Locale.ROOT));
+            SupportLevel supportLevel = SupportLevel.valueOf(
+                obj.optString("support_level", "SUPPORTED").trim().toUpperCase(Locale.ROOT)
+            );
 
             ArrayList<String> oses = new ArrayList<>();
             if (obj.has("os")) {
@@ -345,44 +372,124 @@ public class PortabilityPassRateMetric extends Metric {
             }
 
             int timeoutSeconds = obj.optInt("timeout_seconds", 600);
+            double weight = obj.has("weight") ? obj.getDouble("weight") : 1.0;
+            if (weight < 0.0) {
+                throw new IllegalArgumentException("Target '" + name + "' weight must be >= 0");
+            }
 
             Severity failSeverity = Severity.valueOf(
                 obj.optString("fail_severity", "MAJOR").trim().toUpperCase(Locale.ROOT)
             );
 
-            System.out.println("[DEBUG] [parseTargets] Target " + (i+1) + ": name=" + name + ", mode=" + mode + 
-                             ", os=" + (oses.isEmpty() ? "any" : oses) + ", command=" + command + 
-                             ", timeout=" + timeoutSeconds + "s, failSeverity=" + failSeverity);
+            boolean targetIsolation = obj.has("isolate_workspace")
+                ? obj.getBoolean("isolate_workspace")
+                : isolateWorkspaces;
 
-            result.add(new Target(name, mode, oses, dockerImage, command, timeoutSeconds, failSeverity));
+            result.add(new Target(
+                name,
+                mode,
+                supportLevel,
+                oses,
+                dockerImage,
+                command,
+                timeoutSeconds,
+                weight,
+                failSeverity,
+                targetIsolation
+            ));
         }
 
         return result;
     }
 
-    // -------------------------
-    // Helpers
-    // -------------------------
+    private Set<String> parseWorkspaceExcludes(JSONArray excludes) {
+        HashSet<String> result = new HashSet<>();
+        result.add(".git");
+        result.add("target");
 
-    private boolean isDockerAvailable() {
-        System.out.println("[DEBUG] [isDockerAvailable] Checking Docker availability...");
-        try {
-            Process p = new ProcessBuilder("docker", "--version")
-                .redirectErrorStream(true)
-                .start();
-            boolean available = p.waitFor(5, TimeUnit.SECONDS) && p.exitValue() == 0;
-            System.out.println("[DEBUG] [isDockerAvailable] Docker available: " + available);
-            if (available) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                String line = br.readLine();
-                if (line != null) {
-                    System.out.println("[DEBUG] [isDockerAvailable] Docker version: " + line);
-                }
+        if (excludes == null) {
+            return result;
+        }
+
+        for (int i = 0; i < excludes.length(); i++) {
+            result.add(excludes.getString(i));
+        }
+
+        return result;
+    }
+
+    private Path resolveExecutionRoot(Path projectPath) {
+        Path normalized = projectPath.toAbsolutePath().normalize();
+        Path candidate = Files.isDirectory(normalized) ? normalized : normalized.getParent();
+
+        while (candidate != null) {
+            if (Files.exists(candidate.resolve("pom.xml"))) {
+                return candidate;
             }
-            return available;
-        } catch (Exception e) {
-            System.out.println("[DEBUG] [isDockerAvailable] Docker check failed: " + e.getMessage());
-            return false;
+            candidate = candidate.getParent();
+        }
+
+        return Files.isDirectory(normalized) ? normalized : normalized.getParent();
+    }
+
+    private Path createWorkspaceCopy(Path sourceRoot, String targetName) throws IOException {
+        Path workspace = Files.createTempDirectory("portability-" + sanitize(targetName) + "-");
+
+        Files.walkFileTree(sourceRoot, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                Path relative = sourceRoot.relativize(dir);
+                if (!relative.toString().isEmpty() && shouldSkip(relative)) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+
+                Files.createDirectories(workspace.resolve(relative));
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Path relative = sourceRoot.relativize(file);
+                if (!shouldSkip(relative)) {
+                    Files.copy(file, workspace.resolve(relative), StandardCopyOption.REPLACE_EXISTING);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        return workspace;
+    }
+
+    private boolean shouldSkip(Path relativePath) {
+        for (Path part : relativePath) {
+            if (workspaceExcludes.contains(part.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void deleteRecursively(Path path) {
+        if (path == null || !Files.exists(path)) {
+            return;
+        }
+
+        try {
+            Files.walkFileTree(path, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.deleteIfExists(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.deleteIfExists(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ignored) {
+            // Best effort cleanup for temporary workspaces.
         }
     }
 
@@ -395,19 +502,56 @@ public class PortabilityPassRateMetric extends Metric {
     }
 
     private String dockerMount(Path projectPath) {
-        // Docker Desktop on Windows generally accepts c:/path style.
         String abs = projectPath.toAbsolutePath().normalize().toString();
 
         if (abs.length() >= 2 && abs.charAt(1) == ':') {
-            // Windows drive path
             String drive = String.valueOf(Character.toLowerCase(abs.charAt(0)));
             String rest = abs.substring(2).replace('\\', '/');
-            String win = drive + ":" + rest; // c:/...
-            return win + ":/workspace";
+            return drive + ":" + rest + ":/workspace";
         }
 
-        // Linux/mac
         return abs + ":/workspace";
+    }
+
+    private String formatTargetMessage(Target target, TargetOutcome outcome, boolean countedInScore) {
+        String scoreNote = countedInScore
+            ? String.format(Locale.ROOT, "counted in weighted risk (weight=%.2f)", target.weight)
+            : String.format(Locale.ROOT, "excluded from weighted risk (support=%s, weight=%.2f)", target.supportLevel, target.weight);
+
+        return switch (outcome.status) {
+            case PASSED -> String.format(
+                Locale.ROOT,
+                "Target '%s' PASSED. %s",
+                target.name,
+                scoreNote
+            );
+            case COMPATIBILITY_FAILED -> String.format(
+                Locale.ROOT,
+                "Target '%s' COMPATIBILITY FAILED (%s). %s %s",
+                target.name,
+                outcome.detail,
+                scoreNote,
+                truncate(outcome.output, 1200)
+            );
+            case INFRASTRUCTURE_FAILED -> String.format(
+                Locale.ROOT,
+                "Target '%s' INFRASTRUCTURE FAILED (%s). %s",
+                target.name,
+                outcome.message,
+                truncate(outcome.output, 1200)
+            );
+            case SKIPPED -> String.format(
+                Locale.ROOT,
+                "Target '%s' skipped: %s. %s",
+                target.name,
+                outcome.message,
+                scoreNote
+            );
+        };
+    }
+
+    private String sanitize(String value) {
+        return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
     }
 
     private String truncate(String s, int maxChars) {
@@ -422,38 +566,54 @@ public class PortabilityPassRateMetric extends Metric {
         return v;
     }
 
-    // -------------------------
-    // Types
-    // -------------------------
-
     private enum Mode { LOCAL, DOCKER }
-    private enum Status { PASSED, FAILED, SKIPPED }
+
+    private enum SupportLevel { REQUIRED, SUPPORTED, EXPERIMENTAL }
+
+    private enum Status { PASSED, COMPATIBILITY_FAILED, INFRASTRUCTURE_FAILED, SKIPPED }
 
     private static final class Target {
         final String name;
         final Mode mode;
+        final SupportLevel supportLevel;
         final ArrayList<String> oses;
-        final String dockerImage; // only for docker
+        final String dockerImage;
         final ArrayList<String> command;
         final int timeoutSeconds;
+        final double weight;
         final Severity failSeverity;
+        final boolean isolateWorkspace;
 
         Target(
             String name,
             Mode mode,
+            SupportLevel supportLevel,
             ArrayList<String> oses,
             String dockerImage,
             ArrayList<String> command,
             int timeoutSeconds,
-            Severity failSeverity
+            double weight,
+            Severity failSeverity,
+            boolean isolateWorkspace
         ) {
             this.name = name;
             this.mode = mode;
+            this.supportLevel = supportLevel;
             this.oses = oses;
             this.dockerImage = dockerImage;
             this.command = command;
             this.timeoutSeconds = timeoutSeconds;
+            this.weight = weight;
             this.failSeverity = failSeverity;
+            this.isolateWorkspace = isolateWorkspace;
+        }
+
+        boolean contributesToScore() {
+            return weight > 0.0 && supportLevel != SupportLevel.EXPERIMENTAL;
+        }
+
+        boolean shouldIsolateWorkspace() {
+            return isolateWorkspace;
         }
     }
 
@@ -478,8 +638,58 @@ public class PortabilityPassRateMetric extends Metric {
             return new TargetOutcome(Status.SKIPPED, "skipped", reason, "");
         }
 
-        static TargetOutcome failed(String detail, String message, String output) {
-            return new TargetOutcome(Status.FAILED, detail, message, output);
+        static TargetOutcome compatibilityFailed(String detail, String message, String output) {
+            return new TargetOutcome(Status.COMPATIBILITY_FAILED, detail, message, output);
+        }
+
+        static TargetOutcome infrastructureFailed(String detail, String message, String output) {
+            return new TargetOutcome(Status.INFRASTRUCTURE_FAILED, detail, message, output);
+        }
+    }
+
+    private static final class DockerStatus {
+        final boolean available;
+        final String message;
+
+        private DockerStatus(boolean available, String message) {
+            this.available = available;
+            this.message = message;
+        }
+
+        static DockerStatus available(String message) {
+            return new DockerStatus(true, message);
+        }
+
+        static DockerStatus unavailable(String message) {
+            return new DockerStatus(false, message);
+        }
+    }
+
+    private static final class CommandResult {
+        final boolean started;
+        final boolean timedOut;
+        final int exitCode;
+        final String output;
+        final String message;
+
+        private CommandResult(boolean started, boolean timedOut, int exitCode, String output, String message) {
+            this.started = started;
+            this.timedOut = timedOut;
+            this.exitCode = exitCode;
+            this.output = output;
+            this.message = message;
+        }
+
+        static CommandResult spawnFailed(String message) {
+            return new CommandResult(false, false, -1, "", message);
+        }
+
+        static CommandResult timedOut(String output) {
+            return new CommandResult(true, true, -1, output, "Timed out while running command");
+        }
+
+        static CommandResult completed(int exitCode, String output) {
+            return new CommandResult(true, false, exitCode, output, "");
         }
     }
 }
