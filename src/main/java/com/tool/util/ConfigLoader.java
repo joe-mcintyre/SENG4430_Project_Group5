@@ -20,6 +20,7 @@ import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
 import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
+import com.tool.metrics.security.DependencyVulnerabilityExposureMetric;
 
 
 /**
@@ -34,7 +35,9 @@ public class ConfigLoader {
             "cyclomatic_complexity",
             CyclomaticComplexityMetric::new,
             "reliability_findings_density",
-            WeightedDefectFindingPerKLOC::new
+            WeightedDefectFindingPerKLOC::new,
+            "dependency_vulnerability_exposure",
+            DependencyVulnerabilityExposureMetric::new
         );
 
     /**
