@@ -26,6 +26,7 @@ public class Main {
 
             HTMLReportWriter writer = new HTMLReportWriter(cli.outputPath());
             writer.writeReport(auditResult);
+            System.out.println("Audit completed successfully. Results: file:///"+cli.outputPath());
 
             // JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
             // writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
