@@ -36,6 +36,11 @@ public class PortabilityPassRateMetric extends Metric {
     private final boolean isolateWorkspaces;
     private final Set<String> workspaceExcludes;
 
+    /**
+     * Creates the portability metric using the configured targets and scoring settings.
+     * @param thresholds The thresholds used to classify the metric score
+     * @param settings The portability metric settings loaded from configuration
+     */
     public PortabilityPassRateMetric(ArrayList<Threshold> thresholds, JSONObject settings) {
         super(
             thresholds,
@@ -57,6 +62,12 @@ public class PortabilityPassRateMetric extends Metric {
         }
     }
 
+    /**
+     * Evaluates the project against each configured portability target.
+     * @param projectPath The source path provided to the metric for evaluation
+     * @return The final portability metric result and target findings
+     * @throws Exception Thrown when target execution fails unexpectedly
+     */
     @Override
     public MetricResult evaluate(Path projectPath) throws Exception {
         if (projectPath == null) {
@@ -150,6 +161,15 @@ public class PortabilityPassRateMetric extends Metric {
         return new MetricResult(this, riskScore, findings, thresholds());
     }
 
+    /**
+     * Runs a single portability target and classifies its outcome.
+     * @param target The configured target to execute
+     * @param executionRoot The resolved Maven project root
+     * @param hostOs The detected host operating system
+     * @param dockerStatus The current Docker availability status
+     * @return The outcome produced by the target execution
+     * @throws Exception Thrown when the target command fails unexpectedly
+     */
     private TargetOutcome runTarget(Target target, Path executionRoot, String hostOs, DockerStatus dockerStatus) throws Exception {
         if (!target.oses.isEmpty() && !target.oses.contains(hostOs)) {
             return TargetOutcome.skipped("target not applicable for host OS");
@@ -185,12 +205,26 @@ public class PortabilityPassRateMetric extends Metric {
         }
     }
 
+    /**
+     * Executes a portability target directly on the host machine.
+     * @param target The local target configuration
+     * @param workspace The workspace directory used for the command
+     * @return The classified outcome of the local command
+     * @throws Exception Thrown when the command execution fails unexpectedly
+     */
     private TargetOutcome runLocalTarget(Target target, Path workspace) throws Exception {
         List<String> cmd = normalizeLocalCommand(new ArrayList<>(target.command));
         CommandResult result = execCommand(cmd, workspace, target.timeoutSeconds);
         return classifyCommandResult(result);
     }
 
+    /**
+     * Executes a portability target inside its configured Docker image.
+     * @param target The Docker target configuration
+     * @param workspace The isolated workspace mounted into the container
+     * @return The classified outcome of the Docker command
+     * @throws Exception Thrown when the container command fails unexpectedly
+     */
     private TargetOutcome runDockerTarget(Target target, Path workspace) throws Exception {
         List<String> cmd = new ArrayList<>();
         cmd.add("docker");
@@ -207,6 +241,11 @@ public class PortabilityPassRateMetric extends Metric {
         return classifyCommandResult(result);
     }
 
+    /**
+     * Converts a low-level command result into a portability target outcome.
+     * @param result The completed command result
+     * @return The classified portability outcome for the command
+     */
     private TargetOutcome classifyCommandResult(CommandResult result) {
         if (!result.started) {
             return TargetOutcome.infrastructureFailed("spawn-failed", result.message, result.output);
@@ -227,6 +266,11 @@ public class PortabilityPassRateMetric extends Metric {
         );
     }
 
+    /**
+     * Normalizes local commands so Maven invocations run correctly on Windows hosts.
+     * @param cmd The original local command tokens
+     * @return The normalized command ready for ProcessBuilder execution
+     */
     private List<String> normalizeLocalCommand(List<String> cmd) {
         if (cmd.isEmpty()) {
             return cmd;
@@ -253,6 +297,14 @@ public class PortabilityPassRateMetric extends Metric {
         return wrapped;
     }
 
+    /**
+     * Executes a command and captures its combined process output.
+     * @param cmd The command tokens to execute
+     * @param workingDir The working directory for the process, or null for default
+     * @param timeoutSeconds The maximum execution time in seconds
+     * @return The command execution result including status and output
+     * @throws Exception Thrown when waiting on the process fails unexpectedly
+     */
     private CommandResult execCommand(List<String> cmd, Path workingDir, int timeoutSeconds) throws Exception {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
@@ -285,6 +337,12 @@ public class PortabilityPassRateMetric extends Metric {
         return CommandResult.completed(process.exitValue(), output.toString());
     }
 
+    /**
+     * Starts a background reader that drains process output into a shared buffer.
+     * @param process The running process whose output will be consumed
+     * @param output The output buffer used to collect process text
+     * @return The background thread reading process output
+     */
     private Thread startOutputReader(Process process, StringBuilder output) {
         Thread reader = new Thread(() -> {
             try (BufferedReader bufferedReader = new BufferedReader(
@@ -311,6 +369,10 @@ public class PortabilityPassRateMetric extends Metric {
         return reader;
     }
 
+    /**
+     * Checks whether Docker is available and the daemon can accept commands.
+     * @return The detected Docker availability status and diagnostic message
+     */
     private DockerStatus checkDockerAvailability() {
         try {
             CommandResult result = execCommand(
@@ -336,6 +398,11 @@ public class PortabilityPassRateMetric extends Metric {
         }
     }
 
+    /**
+     * Parses the configured portability targets from the metric settings.
+     * @param settings The portability metric settings object
+     * @return The configured list of portability targets
+     */
     private ArrayList<Target> parseTargets(JSONObject settings) {
         JSONArray arr = settings.getJSONArray("targets");
         ArrayList<Target> result = new ArrayList<>();
@@ -402,6 +469,11 @@ public class PortabilityPassRateMetric extends Metric {
         return result;
     }
 
+    /**
+     * Parses the workspace copy exclusion list used during isolated target runs.
+     * @param excludes The optional JSON array of directory or file names to exclude
+     * @return The final set of excluded path parts
+     */
     private Set<String> parseWorkspaceExcludes(JSONArray excludes) {
         HashSet<String> result = new HashSet<>();
         result.add(".git");
@@ -418,6 +490,11 @@ public class PortabilityPassRateMetric extends Metric {
         return result;
     }
 
+    /**
+     * Resolves the Maven execution root by walking upward until a pom.xml is found.
+     * @param projectPath The project path originally provided to the metric
+     * @return The resolved execution root used for portability checks
+     */
     private Path resolveExecutionRoot(Path projectPath) {
         Path normalized = projectPath.toAbsolutePath().normalize();
         Path candidate = Files.isDirectory(normalized) ? normalized : normalized.getParent();
@@ -432,6 +509,13 @@ public class PortabilityPassRateMetric extends Metric {
         return Files.isDirectory(normalized) ? normalized : normalized.getParent();
     }
 
+    /**
+     * Creates an isolated workspace copy for a single target execution.
+     * @param sourceRoot The source project root to copy
+     * @param targetName The target name used when creating the temporary directory
+     * @return The path to the isolated temporary workspace
+     * @throws IOException Thrown when the workspace copy cannot be created
+     */
     private Path createWorkspaceCopy(Path sourceRoot, String targetName) throws IOException {
         Path workspace = Files.createTempDirectory("portability-" + sanitize(targetName) + "-");
 
@@ -460,6 +544,11 @@ public class PortabilityPassRateMetric extends Metric {
         return workspace;
     }
 
+    /**
+     * Determines whether a relative path should be excluded from a workspace copy.
+     * @param relativePath The relative path being considered during copying
+     * @return True if the path should be skipped, otherwise false
+     */
     private boolean shouldSkip(Path relativePath) {
         for (Path part : relativePath) {
             if (workspaceExcludes.contains(part.toString())) {
@@ -469,6 +558,10 @@ public class PortabilityPassRateMetric extends Metric {
         return false;
     }
 
+    /**
+     * Deletes a temporary workspace and its contents using best-effort cleanup.
+     * @param path The root path to delete recursively
+     */
     private void deleteRecursively(Path path) {
         if (path == null || !Files.exists(path)) {
             return;
@@ -493,6 +586,10 @@ public class PortabilityPassRateMetric extends Metric {
         }
     }
 
+    /**
+     * Detects the current host operating system using normalized metric labels.
+     * @return The normalized host operating system name
+     */
     private String detectOs() {
         String os = System.getProperty("os.name", "unknown").toLowerCase(Locale.ROOT);
         if (os.contains("win")) return "windows";
@@ -501,6 +598,11 @@ public class PortabilityPassRateMetric extends Metric {
         return "unknown";
     }
 
+    /**
+     * Builds the Docker volume mount string for the given workspace path.
+     * @param projectPath The workspace path that will be mounted into Docker
+     * @return The Docker mount argument using /workspace as the container path
+     */
     private String dockerMount(Path projectPath) {
         String abs = projectPath.toAbsolutePath().normalize().toString();
 
@@ -513,6 +615,13 @@ public class PortabilityPassRateMetric extends Metric {
         return abs + ":/workspace";
     }
 
+    /**
+     * Formats the human-readable report message for a target outcome.
+     * @param target The target that produced the outcome
+     * @param outcome The result of the target execution
+     * @param countedInScore Whether the target was included in weighted scoring
+     * @return The formatted report message for the target
+     */
     private String formatTargetMessage(Target target, TargetOutcome outcome, boolean countedInScore) {
         String scoreNote = countedInScore
             ? String.format(Locale.ROOT, "counted in weighted risk (weight=%.2f)", target.weight)
@@ -550,16 +659,32 @@ public class PortabilityPassRateMetric extends Metric {
         };
     }
 
+    /**
+     * Sanitizes a value so it is safe to use in temporary workspace names.
+     * @param value The raw value to sanitize
+     * @return The sanitized lowercase identifier
+     */
     private String sanitize(String value) {
         return value.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
     }
 
+    /**
+     * Truncates long output strings so report messages remain manageable.
+     * @param s The source string to truncate
+     * @param maxChars The maximum number of characters to keep
+     * @return The original or truncated string value
+     */
     private String truncate(String s, int maxChars) {
         if (s == null) return "";
         if (s.length() <= maxChars) return s;
         return s.substring(0, maxChars) + "\n...truncated...\n";
     }
 
+    /**
+     * Clamps a numeric value to the inclusive range between 0.0 and 1.0.
+     * @param v The value to clamp
+     * @return The clamped value
+     */
     private double clamp01(double v) {
         if (v < 0.0) return 0.0;
         if (v > 1.0) return 1.0;
@@ -584,6 +709,19 @@ public class PortabilityPassRateMetric extends Metric {
         final Severity failSeverity;
         final boolean isolateWorkspace;
 
+        /**
+         * Creates a configured portability target definition.
+         * @param name The display name of the target
+         * @param mode The execution mode used for the target
+         * @param supportLevel The support level assigned to the target
+         * @param oses The supported host operating systems for the target
+         * @param dockerImage The Docker image used when mode is DOCKER
+         * @param command The command executed for the target
+         * @param timeoutSeconds The maximum execution time in seconds
+         * @param weight The weighted score contribution of the target
+         * @param failSeverity The severity used when the target compatibility fails
+         * @param isolateWorkspace Whether the target should run in an isolated workspace
+         */
         Target(
             String name,
             Mode mode,
@@ -608,10 +746,18 @@ public class PortabilityPassRateMetric extends Metric {
             this.isolateWorkspace = isolateWorkspace;
         }
 
+        /**
+         * Determines whether this target contributes to the weighted score.
+         * @return True when the target is weighted and not experimental
+         */
         boolean contributesToScore() {
             return weight > 0.0 && supportLevel != SupportLevel.EXPERIMENTAL;
         }
 
+        /**
+         * Indicates whether this target should run in an isolated workspace copy.
+         * @return True when workspace isolation is enabled for this target
+         */
         boolean shouldIsolateWorkspace() {
             return isolateWorkspace;
         }
@@ -623,6 +769,13 @@ public class PortabilityPassRateMetric extends Metric {
         final String message;
         final String output;
 
+        /**
+         * Creates a target outcome for a portability execution result.
+         * @param status The high-level target status
+         * @param detail The short detail code for the outcome
+         * @param message The descriptive message for the outcome
+         * @param output The command output captured for the outcome
+         */
         private TargetOutcome(Status status, String detail, String message, String output) {
             this.status = status;
             this.detail = detail;
@@ -630,18 +783,41 @@ public class PortabilityPassRateMetric extends Metric {
             this.output = output;
         }
 
+        /**
+         * Creates a successful target outcome.
+         * @return A passed target outcome
+         */
         static TargetOutcome passed() {
             return new TargetOutcome(Status.PASSED, "", "", "");
         }
 
+        /**
+         * Creates a skipped target outcome.
+         * @param reason The reason the target was skipped
+         * @return A skipped target outcome
+         */
         static TargetOutcome skipped(String reason) {
             return new TargetOutcome(Status.SKIPPED, "skipped", reason, "");
         }
 
+        /**
+         * Creates a compatibility failure outcome for a target.
+         * @param detail The short detail code for the failure
+         * @param message The descriptive failure message
+         * @param output The captured command output
+         * @return A compatibility failure target outcome
+         */
         static TargetOutcome compatibilityFailed(String detail, String message, String output) {
             return new TargetOutcome(Status.COMPATIBILITY_FAILED, detail, message, output);
         }
 
+        /**
+         * Creates an infrastructure failure outcome for a target.
+         * @param detail The short detail code for the failure
+         * @param message The descriptive failure message
+         * @param output The captured command output
+         * @return An infrastructure failure target outcome
+         */
         static TargetOutcome infrastructureFailed(String detail, String message, String output) {
             return new TargetOutcome(Status.INFRASTRUCTURE_FAILED, detail, message, output);
         }
@@ -651,15 +827,30 @@ public class PortabilityPassRateMetric extends Metric {
         final boolean available;
         final String message;
 
+        /**
+         * Creates the Docker availability state used by portability checks.
+         * @param available Whether Docker is available for target execution
+         * @param message The diagnostic message describing Docker status
+         */
         private DockerStatus(boolean available, String message) {
             this.available = available;
             this.message = message;
         }
 
+        /**
+         * Creates an available Docker status.
+         * @param message The descriptive Docker status message
+         * @return An available Docker status
+         */
         static DockerStatus available(String message) {
             return new DockerStatus(true, message);
         }
 
+        /**
+         * Creates an unavailable Docker status.
+         * @param message The descriptive Docker status message
+         * @return An unavailable Docker status
+         */
         static DockerStatus unavailable(String message) {
             return new DockerStatus(false, message);
         }
@@ -672,6 +863,14 @@ public class PortabilityPassRateMetric extends Metric {
         final String output;
         final String message;
 
+        /**
+         * Creates a low-level command execution result.
+         * @param started Whether the command process started successfully
+         * @param timedOut Whether the command exceeded its timeout
+         * @param exitCode The process exit code when available
+         * @param output The captured command output
+         * @param message The descriptive status message for the result
+         */
         private CommandResult(boolean started, boolean timedOut, int exitCode, String output, String message) {
             this.started = started;
             this.timedOut = timedOut;
@@ -680,14 +879,30 @@ public class PortabilityPassRateMetric extends Metric {
             this.message = message;
         }
 
+        /**
+         * Creates a command result representing a process spawn failure.
+         * @param message The descriptive spawn failure message
+         * @return A failed command result
+         */
         static CommandResult spawnFailed(String message) {
             return new CommandResult(false, false, -1, "", message);
         }
 
+        /**
+         * Creates a command result representing a timeout.
+         * @param output The command output captured before timing out
+         * @return A timed out command result
+         */
         static CommandResult timedOut(String output) {
             return new CommandResult(true, true, -1, output, "Timed out while running command");
         }
 
+        /**
+         * Creates a command result representing a completed process.
+         * @param exitCode The final process exit code
+         * @param output The captured command output
+         * @return A completed command result
+         */
         static CommandResult completed(int exitCode, String output) {
             return new CommandResult(true, false, exitCode, output, "");
         }
