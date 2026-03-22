@@ -19,13 +19,9 @@ import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import java.util.function.BiFunction;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
-<<<<<<< HEAD
 import com.tool.metrics.availability.PortabilityPassRateMetric;
-=======
-import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
 import com.tool.metrics.security.DependencyVulnerabilityExposureMetric;
 
->>>>>>> origin
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
@@ -33,20 +29,21 @@ import com.tool.metrics.security.DependencyVulnerabilityExposureMetric;
 public class ConfigLoader {
     public static final String CONFIG_FILE_PATH = "default_config.json";
 
-    // Add new metrics here
     private static final Map<String, BiFunction<ArrayList<Threshold>, JSONObject, Metric>> METRIC_REGISTRY =
         Map.of(
             "cyclomatic_complexity",
             (thresholds, metricObj) -> new CyclomaticComplexityMetric(thresholds),
-            CyclomaticComplexityMetric::new,
+
             "dependency_vulnerability_exposure",
-            DependencyVulnerabilityExposureMetric::new
+            (thresholds, metricObj) -> new DependencyVulnerabilityExposureMetric(thresholds),
+
             "portability_pass_rate",
             (thresholds, metricObj) -> new PortabilityPassRateMetric(
                 thresholds,
                 metricObj.getJSONObject("settings")
             )
         );
+        
     /**
      * Resolve the configuration file path. If the provided path is null, use the default config file.
      * If the provided path does not exist, throw an exception.

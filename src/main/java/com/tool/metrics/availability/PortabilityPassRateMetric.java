@@ -47,7 +47,6 @@ public class PortabilityPassRateMetric extends Metric {
             "Portability Pass Rate",
             "Measures portability as a weighted compatibility risk across configured JDK/OS targets."
         );
-
         if (settings == null) {
             throw new IllegalArgumentException("portability_pass_rate settings cannot be null");
         }
