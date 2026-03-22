@@ -19,7 +19,13 @@ import com.tool.domain.Category;
 import com.tool.metrics.Metric;
 import java.util.function.BiFunction;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
+<<<<<<< HEAD
 import com.tool.metrics.availability.PortabilityPassRateMetric;
+=======
+import com.tool.metrics.reliability.WeightedDefectFindingPerKLOC;
+import com.tool.metrics.security.DependencyVulnerabilityExposureMetric;
+
+>>>>>>> origin
 
 /**
  * Utility class for resolving metric types and thresholds from the configuration file.
@@ -32,7 +38,9 @@ public class ConfigLoader {
         Map.of(
             "cyclomatic_complexity",
             (thresholds, metricObj) -> new CyclomaticComplexityMetric(thresholds),
-
+            CyclomaticComplexityMetric::new,
+            "dependency_vulnerability_exposure",
+            DependencyVulnerabilityExposureMetric::new
             "portability_pass_rate",
             (thresholds, metricObj) -> new PortabilityPassRateMetric(
                 thresholds,

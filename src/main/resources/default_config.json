@@ -64,5 +64,19 @@
         }
       }
     ]
+  },
+  {
+    "category": "Security",
+    "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
+    "metrics": [
+      {
+        "type": "dependency_vulnerability_exposure",
+        "thresholds": {
+          "critical": 40,
+          "major": 79,
+          "minor": 94
+        }
+      }
+    ]
   }
-] 
+]
