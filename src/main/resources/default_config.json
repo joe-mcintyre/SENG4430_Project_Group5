@@ -14,15 +14,53 @@
     ]
   },
   {
-    "category": "Reliability",
-    "description": "Measures reliability using SpotBugs findings density per KLOC.",
+    "category": "Availability",
+    "description": "Measures availability via portability pass rate across configured OS/JDK targets (host + Docker).",
     "metrics": [
       {
-        "type": "reliability_findings_density",
+        "type": "portability_pass_rate",
         "thresholds": {
-          "critical": 0.25,
-          "major": 0.50,
-          "minor": 0.75
+          "critical": 0.50,
+          "major": 0.25,
+          "minor": 0.10
+        },
+        "settings": {
+          "count_skipped_as_failure": false,
+          "isolate_workspaces": true,
+          "workspace_excludes": [".git", "target"],
+          "targets": [
+            {
+              "name": "host-jdk17",
+              "mode": "local",
+              "support_level": "required",
+              "weight": 0.15,
+              "command": ["mvn", "-q", "clean", "compile"],
+              "timeout_seconds": 600,
+              "fail_severity": "major"
+            },
+            {
+              "name": "linux-jdk17",
+              "mode": "docker",
+              "support_level": "required",
+              "weight": 0.55,
+              "docker_image": "maven:3-eclipse-temurin-17",
+              "os": ["windows", "linux", "macos"],
+              "command": ["mvn", "-q", "clean", "compile"],
+              "timeout_seconds": 600,
+              "fail_severity": "critical"
+            },
+            {
+              "name": "linux-jdk21",
+              "mode": "docker",
+              "support_level": "supported",
+              "weight": 0.30,
+              "docker_image": "maven:3-eclipse-temurin-21",
+              "os": ["windows", "linux", "macos"],
+              "command": ["mvn", "-q", "clean", "compile"],
+              "timeout_seconds": 600,
+              "fail_severity": "major"
+            }
+          ]
         }
       }
     ]

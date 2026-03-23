@@ -4,7 +4,11 @@ import com.tool.app.AuditController;
 import com.tool.app.AuditResult;
 import com.tool.cli.CliArgs;
 import com.tool.reports.HTMLReportWriter;
+import com.tool.reports.JSONReportWriter;
+
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import com.tool.util.DependencyCheckReportResolver;
 
 public class Main {
@@ -20,22 +24,26 @@ public class Main {
 
             AuditResult auditResult = controller.runAudit(cli.sourceRoot(), dependencyReportPath);
 
-            // Temporary console output for results - can be removed or replaced with more detailed output in the future
-            System.out.println("Audit completed successfully. Results:");
-            auditResult.results().forEach(result -> System.out.println(result.toString()));
+            System.out.println("Audit complete generating reports...");
+            Path basePath = cli.outputPath();
 
-            HTMLReportWriter writer = new HTMLReportWriter(cli.outputPath());
-            writer.writeReport(auditResult);
-            System.out.println("Audit completed successfully. Results: file:///"+cli.outputPath());
+            Path jsonPath = Paths.get(basePath.toString() + ".json");
+            JSONReportWriter jsonReport = new JSONReportWriter(jsonPath);
+            jsonReport.writeReport(auditResult);
 
-            // JsonReportWriter writer = new JsonReportWriter(cli.outputPath());
-            // writer.appendMetadata("Tool version: 1.0.0, Audit timestamp: " + java.time.Instant.now().toString());
-            // for (MetricResult res : auditResult.results()) {
-            //     writer.appendResult(res);
-            // }
+            Path htmlPath = Paths.get(basePath.toString() + ".html");
+            HTMLReportWriter htmlReport = new HTMLReportWriter(htmlPath);
+            htmlReport.writeReport(auditResult);
 
-            // writer.writeReport();
-            // System.out.println("Report written to: " + cli.outputPath().toString());
+            System.out.println("Audit completed successfully.\nReport can be found: " + cli.outputPath().toAbsolutePath() + ".html");
+
+            // Open the HTML report automatically
+            try {
+                java.awt.Desktop.getDesktop().browse(htmlPath.toAbsolutePath().toUri());
+            } catch (Exception e) {
+                System.err.println("Could not open the HTML report automatically: " + e.getMessage());
+            }
+         
 
         } catch (IllegalArgumentException ex) {
             System.err.println("Error: " + ex.getMessage());

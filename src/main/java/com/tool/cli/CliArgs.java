@@ -45,7 +45,7 @@ public final class CliArgs {
         );
 
         Path configPath = ConfigLoader.resolveConfigPath(values.get("--config"));
-        Path outputPath = Paths.get(values.getOrDefault("--output", "reports/quality-report.html"));
+        Path outputPath = Paths.get(values.getOrDefault("--output", "reports/quality-report"));
 
         String defaultProject = sourcePath.getFileName() != null
                 ? sourcePath.getFileName().toString()
@@ -135,7 +135,7 @@ public final class CliArgs {
               --project           Project label in report
               --dependency-report OWASP Dependency-Check JSON report file
               --config            Path to JSON config file (defaults to built-in config if not provided)
-              --output            HTML report output location
+              --output            Report output folder
             """;
     }
 }

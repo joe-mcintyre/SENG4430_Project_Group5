@@ -22,7 +22,7 @@
 
 To generate the `.jar` use `mvn package` this can then be run with:
 
-`java -jar target/quality-auditor-tool-1.0.0-jar-with-dependencies.jar --source .`
+`java -jar target/quality-auditor-tool-1.0.0-jar-with-dependencies.jar --source "path/to/project"`
 
 Note: if you don't want to install maven just use the VSCode Maven extension and use that instead.
 
