@@ -35,7 +35,9 @@ public class AuditController {
         AuditResult result = new AuditResult();
         try {
             for (Category category : categories) {
+                System.out.println("Evaluating Category: "+ category.name());
                 for (Metric metric : category.metrics()) {
+                    System.out.println("Evaluating Metric: "+ metric.name());
                     MetricResult res = metric.evaluate(projectPath, dependencyReportPath);
                     result.addResult(res);
                 }

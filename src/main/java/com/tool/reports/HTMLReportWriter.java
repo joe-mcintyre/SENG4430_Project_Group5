@@ -2,7 +2,6 @@ package com.tool.reports;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.tool.app.AuditResult;
@@ -88,7 +87,6 @@ public class HTMLReportWriter extends ReportWriter {
                             min-height: 100vh;
                         }
 
-                        /* ── Top bar ───────────────────────────────── */
                         .topbar {
                             background: var(--surface);
                             border-bottom: 1px solid var(--border-md);
@@ -143,14 +141,12 @@ public class HTMLReportWriter extends ReportWriter {
                             letter-spacing: .06em;
                         }
 
-                        /* ── Page layout ───────────────────────────── */
                         .layout {
                             display: grid;
                             grid-template-columns: 220px 1fr;
                             min-height: calc(100vh - 52px);
                         }
 
-                        /* ── Sidebar ───────────────────────────────── */
                         .sidebar {
                             background: var(--surface);
                             border-right: 1px solid var(--border);
@@ -206,13 +202,11 @@ public class HTMLReportWriter extends ReportWriter {
                             background: var(--amber-dim);
                         }
 
-                        /* ── Main content ──────────────────────────── */
                         .main {
                             padding: 40px 48px;
                             max-width: 1040px;
                         }
 
-                        /* ── Page header ───────────────────────────── */
                         .page-header {
                             margin-bottom: 48px;
                             padding-bottom: 28px;
@@ -259,7 +253,6 @@ public class HTMLReportWriter extends ReportWriter {
                             letter-spacing: .05em;
                         }
 
-                        /* ── Category section ──────────────────────── */
                         .category-section { margin-bottom: 52px; }
 
                         .category-header {
@@ -302,7 +295,6 @@ public class HTMLReportWriter extends ReportWriter {
                             line-height: 1.6;
                         }
 
-                        /* ── Metric card ───────────────────────────── */
                         .metric-card {
                             background: var(--surface);
                             border: 1px solid var(--border);
@@ -313,12 +305,12 @@ public class HTMLReportWriter extends ReportWriter {
                             transition: border-color .2s, border-top-color .2s;
                         }
 
-                        .metric-card:hover           { border-color: var(--border-md); border-top-color: var(--amber); }
-                        .metric-card.sev-critical    { border-top-color: var(--critical); }
-                        .metric-card.sev-major       { border-top-color: var(--major); }
-                        .metric-card.sev-minor       { border-top-color: var(--minor); }
-                        .metric-card.sev-info        { border-top-color: var(--info); }
-                        .metric-card.sev-success     { border-top-color: var(--pass); }
+                        .metric-card:hover        { border-color: var(--border-md); border-top-color: var(--amber); }
+                        .metric-card.sev-critical { border-top-color: var(--critical); }
+                        .metric-card.sev-major    { border-top-color: var(--major); }
+                        .metric-card.sev-minor    { border-top-color: var(--minor); }
+                        .metric-card.sev-info     { border-top-color: var(--info); }
+                        .metric-card.sev-success  { border-top-color: var(--pass); }
 
                         .metric-header {
                             display: flex;
@@ -362,45 +354,14 @@ public class HTMLReportWriter extends ReportWriter {
                             flex-shrink: 0;
                         }
 
-                        .badge-score {
-                            background: var(--surface3);
-                            border-color: var(--border-md);
-                            color: var(--text-muted);
-                        }
-
+                        .badge-score   { background: var(--surface3); border-color: var(--border-md); color: var(--text-muted); }
                         .badge-score::before { display: none; }
 
-                        .badge-critical {
-                            background: var(--critical-dim);
-                            border-color: rgba(232,55,42,.4);
-                            color: var(--critical);
-                            box-shadow: 0 0 8px var(--critical-glow);
-                        }
-
-                        .badge-major {
-                            background: var(--major-dim);
-                            border-color: rgba(232,108,42,.4);
-                            color: var(--major);
-                            box-shadow: 0 0 8px var(--major-glow);
-                        }
-
-                        .badge-minor {
-                            background: var(--minor-dim);
-                            border-color: rgba(212,170,48,.4);
-                            color: var(--minor);
-                        }
-
-                        .badge-info {
-                            background: var(--info-dim);
-                            border-color: rgba(74,144,196,.4);
-                            color: var(--info);
-                        }
-
-                        .badge-success {
-                            background: var(--pass-dim);
-                            border-color: rgba(58,158,110,.4);
-                            color: var(--pass);
-                        }
+                        .badge-critical { background: var(--critical-dim); border-color: rgba(232,55,42,.4);  color: var(--critical); box-shadow: 0 0 8px var(--critical-glow); }
+                        .badge-major    { background: var(--major-dim);    border-color: rgba(232,108,42,.4); color: var(--major);    box-shadow: 0 0 8px var(--major-glow); }
+                        .badge-minor    { background: var(--minor-dim);    border-color: rgba(212,170,48,.4); color: var(--minor); }
+                        .badge-info     { background: var(--info-dim);     border-color: rgba(74,144,196,.4); color: var(--info); }
+                        .badge-success  { background: var(--pass-dim);     border-color: rgba(58,158,110,.4); color: var(--pass); }
 
                         .metric-description {
                             font-size: 13px;
@@ -409,21 +370,29 @@ public class HTMLReportWriter extends ReportWriter {
                             margin-bottom: 16px;
                         }
 
-                        /* ── Findings table ────────────────────────── */
                         .findings-table-wrap {
                             border: 1px solid var(--border);
                             border-radius: var(--radius);
                             overflow-x: auto;
+                            overflow-y: auto;
+                            max-height: 420px;
+                            position: relative;
                         }
 
-                        .findings-table-wrap::-webkit-scrollbar { height: 5px; }
-                        .findings-table-wrap::-webkit-scrollbar-track { background: var(--surface2); }
-                        .findings-table-wrap::-webkit-scrollbar-thumb { background: var(--border-md); border-radius: 99px; }
-                        .findings-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+                        .findings-table-wrap::-webkit-scrollbar        { height: 6px; width: 6px; }
+                        .findings-table-wrap::-webkit-scrollbar-track  { background: var(--surface2); }
+                        .findings-table-wrap::-webkit-scrollbar-thumb  { background: var(--border-hi); border-radius: 99px; }
+                        .findings-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+                        .findings-table-wrap::-webkit-scrollbar-corner { background: var(--surface2); }
 
                         table { width: 100%; border-collapse: collapse; min-width: 520px; }
 
-                        thead tr { background: var(--surface2); }
+                        thead tr {
+                            background: var(--surface2);
+                            position: sticky;
+                            top: 0;
+                            z-index: 3;
+                        }
 
                         th {
                             font-family: var(--mono);
@@ -435,6 +404,9 @@ public class HTMLReportWriter extends ReportWriter {
                             text-align: left;
                             border-bottom: 1px solid var(--border);
                             white-space: nowrap;
+                            position: sticky;
+                            top: 0;
+                            background: var(--surface2);
                         }
 
                         td {
@@ -444,16 +416,56 @@ public class HTMLReportWriter extends ReportWriter {
                             padding: 9px 14px;
                             border-bottom: 1px solid var(--border);
                             vertical-align: top;
+                            white-space: nowrap;
                         }
 
                         tbody tr:last-child td { border-bottom: none; }
                         tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-                        td:first-child { color: var(--amber); }
                         td:nth-child(2) { color: var(--text-muted); width: 56px; }
                         td:nth-child(3) { color: var(--info); }
+                        td:last-child   { white-space: normal; }
 
-                        /* ── Empty state ───────────────────────────── */
+                        /* Source File — sticky, wraps onto multiple lines, draggable width */
+                        th:first-child {
+                            position: sticky;
+                            left: 0;
+                            z-index: 4;
+                            background: var(--surface2);
+                            color: var(--text-dim);
+                            min-width: 160px;
+                            width: 220px;
+                            max-width: 480px;
+                            overflow: hidden;
+                            resize: horizontal;
+                        }
+
+                        td:first-child {
+                            position: sticky;
+                            left: 0;
+                            z-index: 2;
+                            background: var(--surface);
+                            color: var(--amber);
+                            white-space: normal;
+                            word-break: break-all;
+                            line-height: 1.5;
+                            min-width: 160px;
+                            width: 220px;
+                            max-width: 480px;
+                        }
+
+                        tbody tr:hover td:first-child { background: #1a1b1e; }
+
+                        td:first-child::after,
+                        th:first-child::after {
+                            content: '';
+                            position: absolute;
+                            top: 0; right: 0; bottom: 0;
+                            width: 8px;
+                            background: linear-gradient(to right, rgba(0,0,0,0.22), transparent);
+                            pointer-events: none;
+                        }
+
                         .empty {
                             text-align: center;
                             padding: 80px 40px;
@@ -463,7 +475,6 @@ public class HTMLReportWriter extends ReportWriter {
                             letter-spacing: .1em;
                         }
 
-                        /* ── Go to top ─────────────────────────────── */
                         .go-top {
                             position: fixed;
                             bottom: 28px;
@@ -534,149 +545,162 @@ public class HTMLReportWriter extends ReportWriter {
         Files.writeString(reportPath, html.toString());
     }
 
-    private ArrayList<Category> getCategories(AuditResult auditResult) {
-        List<MetricResult> results = auditResult.results();
-        ArrayList<Category> categories = new ArrayList<>();
-
-        Category currentCategory = null;
-        for (MetricResult metricResult : results) {
-            Metric metric = metricResult.metric();
-            if (!metric.category().equals(currentCategory)) {
-                currentCategory = metric.category();
-                categories.add(currentCategory);
-            }
-        }
-
-        return categories;
-    }
-
     private void writeHTMLContent(AuditResult auditResult) {
+        List<Category> categories = auditResult.categories();
 
-        List<MetricResult> results = auditResult.results();
-
-        if (results.isEmpty()) {
-            htmlContent.append("</nav><main class='main'>");
-            htmlContent.append("<div class='empty'>No project data</div>");
-            htmlContent.append("</main>");
+        if (categories.isEmpty()) {
+            writeEmptyState();
             return;
         }
 
-        ArrayList<Category> categories = getCategories(auditResult);
+        writeSidebarLinks(categories);
+        htmlContent.append("</nav><main class='main'>");
+        writePageHeader();
+        writeCategorySections(auditResult, categories);
+        htmlContent.append("</main>");
+    }
 
-        // Sidebar links
+    private void writeEmptyState() {
+        htmlContent.append("</nav><main class='main'>");
+        htmlContent.append("<div class='empty'>No project data</div>");
+        htmlContent.append("</main>");
+    }
+
+    private void writeSidebarLinks(List<Category> categories) {
         int idx = 0;
         for (Category category : categories) {
             idx++;
             htmlContent.append("<a href='#cat-")
-                       .append(category.name().replace(" ", "-"))
-                       .append("' class='sidebar-link'>")
-                       .append(String.format("%02d", idx))
-                       .append(" &nbsp;")
-                       .append(category.name())
-                       .append("</a>");
+                    .append(categoryAnchor(category))
+                    .append("' class='sidebar-link'>")
+                    .append(String.format("%02d", idx))
+                    .append(" &nbsp;")
+                    .append(category.name())
+                    .append("</a>");
         }
+    }
 
-        // Close sidebar, open main
-        htmlContent.append("</nav><main class='main'>");
-
-        // Page header
+    private void writePageHeader() {
         htmlContent.append("""
                 <div class='page-header'>
                     <div class='page-eyebrow'>Diagnostic Report</div>
                     <div class='page-title'>Software Quality<br><span>Audit Report</span></div>
                 </div>
                 """);
+    }
 
-        // Metric cards
-        Category currentCategory = null;
+    private void writeCategorySections(AuditResult auditResult, List<Category> categories) {
         int catIdx = 0;
-
-        for (MetricResult metricResult : results) {
-            Metric metric = metricResult.metric();
-
-            if (!metric.category().equals(currentCategory)) {
-                if (currentCategory != null) {
-                    htmlContent.append("</div>"); // close previous category-section
-                }
-                currentCategory = metric.category();
-                catIdx++;
-
-                htmlContent.append("<div class='category-section'>");
-                htmlContent.append("<div class='category-header' id='cat-")
-                           .append(currentCategory.name().replace(" ", "-"))
-                           .append("'>");
-                htmlContent.append("<span class='category-number'>")
-                           .append(String.format("%02d", catIdx))
-                           .append("</span>");
-                htmlContent.append("<span class='category-title'>")
-                           .append(currentCategory.name())
-                           .append("</span>");
-                htmlContent.append("<div class='category-rule'></div>");
-                htmlContent.append("</div>"); // category-header
-                htmlContent.append("<div class='category-desc'>")
-                           .append(currentCategory.description())
-                           .append("</div>");
+        for (Category category : categories) {
+            if (catIdx != 0) {
+                htmlContent.append("</div>");
             }
+            catIdx++;
+            writeCategorySection(auditResult, category, catIdx);
+        }
+        htmlContent.append("</div>");
+    }
 
-            Threshold highestThreshold = metricResult.mostSevereThreshold();
-            String sevClass = highestThreshold == null
+    private void writeCategorySection(AuditResult auditResult, Category category, int catIdx) {
+        htmlContent.append("<div class='category-section'>");
+        writeCategoryHeader(category, catIdx);
+        htmlContent.append("<div class='category-desc'>")
+                .append(category.description())
+                .append("</div>");
+
+        for (MetricResult metricResult : auditResult.resultsFor(category)) {
+            writeMetricCard(metricResult);
+        }
+    }
+
+    private void writeCategoryHeader(Category category, int catIdx) {
+        htmlContent.append("<div class='category-header' id='cat-")
+                .append(categoryAnchor(category))
+                .append("'>");
+        htmlContent.append("<span class='category-number'>")
+                .append(String.format("%02d", catIdx))
+                .append("</span>");
+        htmlContent.append("<span class='category-title'>")
+                .append(category.name())
+                .append("</span>");
+        htmlContent.append("<div class='category-rule'></div>");
+        htmlContent.append("</div>");
+    }
+
+    private void writeMetricCard(MetricResult metricResult) {
+        Metric metric = metricResult.metric();
+        Threshold highestThreshold = metricResult.mostSevereThreshold();
+        String sevClass = severityClass(highestThreshold);
+
+        htmlContent.append("<div class='metric-card ").append(sevClass).append("'>");
+        writeMetricHeader(metric, metricResult, highestThreshold);
+        htmlContent.append("<p class='metric-description'>").append(metric.description()).append("</p>");
+
+        if (!metricResult.findings().isEmpty()) {
+            writeFindingsTable(metricResult.findings());
+        }
+
+        htmlContent.append("</div>");
+    }
+
+    private void writeMetricHeader(Metric metric, MetricResult metricResult, Threshold highestThreshold) {
+        htmlContent.append("<div class='metric-header'>");
+        htmlContent.append("<div class='metric-name'>").append(metric.name()).append("</div>");
+        writeMetricBadges(metric, metricResult, highestThreshold);
+        htmlContent.append("</div>");
+    }
+
+    private void writeMetricBadges(Metric metric, MetricResult metricResult, Threshold highestThreshold) {
+        String badgeClass = highestThreshold == null ? "success" : highestThreshold.toString().toLowerCase();
+        String badgeText  = highestThreshold == null ? "Pass"    : highestThreshold.toString();
+
+        htmlContent.append("<div class='badge-group'>");
+        htmlContent.append("<span class='badge badge-score'>")
+                .append(formatScoreLabel(metric))
+                .append(": ")
+                .append(formatScore(metricResult))
+                .append("</span>");
+        htmlContent.append("<span class='badge badge-").append(badgeClass).append("'>")
+                .append(badgeText)
+                .append("</span>");
+        htmlContent.append("</div>");
+    }
+
+    private void writeFindingsTable(List<Finding> findings) {
+        htmlContent.append("<div class='findings-table-wrap'>");
+        htmlContent.append("<table>");
+        htmlContent.append("<thead><tr>")
+                .append("<th>Source File</th>")
+                .append("<th>Line</th>")
+                .append("<th>Function / Method</th>")
+                .append("<th>Diagnostic Message</th>")
+                .append("</tr></thead>");
+        htmlContent.append("<tbody>");
+
+        for (Finding finding : findings) {
+            writeFindingRow(finding);
+        }
+
+        htmlContent.append("</tbody></table></div>");
+    }
+
+    private void writeFindingRow(Finding finding) {
+        htmlContent.append("<tr>");
+        htmlContent.append("<td style='position:relative'>").append(finding.file()).append("</td>");
+        htmlContent.append("<td>").append(finding.line()).append("</td>");
+        htmlContent.append("<td>").append(finding.function()).append("</td>");
+        htmlContent.append("<td>").append(finding.message()).append("</td>");
+        htmlContent.append("</tr>");
+    }
+
+    private String categoryAnchor(Category category) {
+        return category.name().replace(" ", "-");
+    }
+
+    private String severityClass(Threshold threshold) {
+        return threshold == null
                 ? "sev-success"
-                : "sev-" + highestThreshold.toString().toLowerCase();
-
-            htmlContent.append("<div class='metric-card ").append(sevClass).append("'>");
-
-            htmlContent.append("<div class='metric-header'>");
-            htmlContent.append("<div class='metric-name'>").append(metric.name()).append("</div>");
-
-            htmlContent.append("<div class='badge-group'>");
-            htmlContent.append("<span class='badge badge-score'>")
-                       .append(formatScoreLabel(metric))
-                       .append(": ")
-                       .append(formatScore(metricResult))
-                       .append("</span>");
-
-            String badgeClass = highestThreshold == null ? "success" : highestThreshold.toString().toLowerCase();
-            String badgeText  = highestThreshold == null ? "Pass" : highestThreshold.toString();
-
-            htmlContent.append("<span class='badge badge-").append(badgeClass).append("'>")
-                       .append(badgeText)
-                       .append("</span>");
-            htmlContent.append("</div>"); // badge-group
-            htmlContent.append("</div>"); // metric-header
-
-            htmlContent.append("<p class='metric-description'>").append(metric.description()).append("</p>");
-
-            if (!metricResult.findings().isEmpty()) {
-                htmlContent.append("<div class='findings-table-wrap'>");
-                htmlContent.append("<table>");
-                htmlContent.append("<thead><tr>")
-                           .append("<th>Source File</th>")
-                           .append("<th>Line</th>")
-                           .append("<th>Function / Method</th>")
-                           .append("<th>Diagnostic Message</th>")
-                           .append("</tr></thead>");
-                htmlContent.append("<tbody>");
-
-                for (Finding finding : metricResult.findings()) {
-                    htmlContent.append("<tr>");
-                    htmlContent.append("<td>").append(finding.file()).append("</td>");
-                    htmlContent.append("<td>").append(finding.line()).append("</td>");
-                    htmlContent.append("<td>").append(finding.function()).append("</td>");
-                    htmlContent.append("<td>").append(finding.message()).append("</td>");
-                    htmlContent.append("</tr>");
-                }
-
-                htmlContent.append("</tbody></table></div>");
-            }
-
-            htmlContent.append("</div>"); // metric-card
-        }
-
-        if (currentCategory != null) {
-            htmlContent.append("</div>"); // close final category-section
-        }
-
-        htmlContent.append("</main>");
+                : "sev-" + threshold.toString().toLowerCase();
     }
 
     private String formatScoreLabel(Metric metric) {
