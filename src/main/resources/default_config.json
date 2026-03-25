@@ -72,9 +72,9 @@
       {
         "type": "dependency_vulnerability_exposure",
         "thresholds": {
-          "critical": 40,
-          "major": 79,
-          "minor": 94
+          "critical": 60,
+          "major": 25,
+          "minor": 10
         }
       }
     ]
