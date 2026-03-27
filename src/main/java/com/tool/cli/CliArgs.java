@@ -11,17 +11,23 @@ public final class CliArgs {
     private final String projectName;
     private final Path sourceRoot;
     private final Path dependencyReportPath;
+    private final Path dependencyDataPath;
+    private final boolean dependencyCheckNoUpdate;
     private final Path configPath;
     private final Path outputPath;
 
     private CliArgs(String projectName,
                     Path sourceRoot,
                     Path dependencyReportPath,
+                    Path dependencyDataPath,
+                    boolean dependencyCheckNoUpdate,
                     Path configPath,
                     Path outputPath) {
         this.projectName = projectName;
         this.sourceRoot = sourceRoot;
         this.dependencyReportPath = dependencyReportPath;
+        this.dependencyDataPath = dependencyDataPath;
+        this.dependencyCheckNoUpdate = dependencyCheckNoUpdate;
         this.configPath = configPath;
         this.outputPath = outputPath;
     }
@@ -39,10 +45,11 @@ public final class CliArgs {
         }
 
         Path sourcePath = Paths.get(source);
-        Path dependencyReportPath = resolveDependencyReportPath(
-                sourcePath,
+        Path dependencyReportPath = resolveOptionalPath(
                 firstPresent(values, "--dependency-report", "--depcheck-report", "--dependencycheck-report", "-d")
         );
+        Path dependencyDataPath = resolveOptionalPath(firstPresent(values, "--dependency-check-data"));
+        boolean dependencyCheckNoUpdate = values.containsKey("--dependency-check-no-update");
 
         Path configPath = ConfigLoader.resolveConfigPath(values.get("--config"));
         Path outputPath = Paths.get(values.getOrDefault("--output", "reports/quality-report"));
@@ -53,7 +60,15 @@ public final class CliArgs {
 
         String projectName = values.getOrDefault("--project", defaultProject);
 
-        return new CliArgs(projectName, sourcePath, dependencyReportPath, configPath, outputPath);
+        return new CliArgs(
+                projectName,
+                sourcePath,
+                dependencyReportPath,
+                dependencyDataPath,
+                dependencyCheckNoUpdate,
+                configPath,
+                outputPath
+        );
     }
 
     private static Map<String, String> parseArgs(String[] args) {
@@ -91,11 +106,11 @@ public final class CliArgs {
         return null;
     }
 
-    private static Path resolveDependencyReportPath(Path sourcePath, String raw) {
-        if (raw != null && !raw.isBlank()) {
-            return Paths.get(raw);
+    private static Path resolveOptionalPath(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
         }
-        return null;
+        return Paths.get(raw);
     }
 
     public String projectName() {
@@ -110,6 +125,14 @@ public final class CliArgs {
         return dependencyReportPath;
     }
 
+    public Path dependencyDataPath() {
+        return dependencyDataPath;
+    }
+
+    public boolean dependencyCheckNoUpdate() {
+        return dependencyCheckNoUpdate;
+    }
+
     public Path configPath() {
         return configPath;
     }
@@ -121,21 +144,26 @@ public final class CliArgs {
     public static String usage() {
         return """
             Usage:
-              java -jar quality-auditor-tool.jar \\
-                --project <name> \\
-                --source <path-to-java-source-root> \\
-                [--dependency-report <path-to-dependency-check-report.json>] \\
-                [--config <path-to-config.json>] \\
+              java -jar quality-auditor-tool.jar \
+                --project <name> \
+                --source <path-to-java-source-root> \
+                [--dependency-report <path-to-dependency-check-report.json>] \
+                [--dependency-check-data <path-to-dependency-check-data-dir>] \
+                [--dependency-check-no-update] \
+                [--config <path-to-config.json>] \
                 [--output <path-to-output-report.html>]
 
             Required:
-              --source            Path to Java source directory (e.g. src/main/java)
+              --source                  Path to Java source directory (e.g. src/main/java)
 
             Optional:
-              --project           Project label in report
-              --dependency-report OWASP Dependency-Check JSON report file
-              --config            Path to JSON config file (defaults to built-in config if not provided)
-              --output            Report output folder
+              --project                 Project label in report
+              --dependency-report       OWASP Dependency-Check JSON report file
+              --dependency-check-data   Directory for local Dependency-Check CVE cache/database
+              --dependency-check-no-update
+                                        Reuse the local Dependency-Check cache without updating
+              --config                  Path to JSON config file (defaults to built-in config if not provided)
+              --output                  Report output folder
             """;
     }
 }

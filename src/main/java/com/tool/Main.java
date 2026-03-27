@@ -19,7 +19,9 @@ public class Main {
             AuditController controller = new AuditController(cli.configPath());
             Path dependencyReportPath = DependencyCheckReportResolver.ensureFreshReportExists(
                 cli.sourceRoot(),
-                cli.dependencyReportPath()
+                cli.dependencyReportPath(),
+                cli.dependencyDataPath(),
+                cli.dependencyCheckNoUpdate()
             );
 
             AuditResult auditResult = controller.runAudit(cli.sourceRoot(), dependencyReportPath);
@@ -35,15 +37,14 @@ public class Main {
             HTMLReportWriter htmlReport = new HTMLReportWriter(htmlPath);
             htmlReport.writeReport(auditResult);
 
-            System.out.println("Audit completed successfully.\nReport can be found: " + cli.outputPath().toAbsolutePath() + ".html");
+            System.out.println("Audit completed successfully.\nReport can be found: "
+        + cli.outputPath().toAbsolutePath() + ".html");
 
-            // Open the HTML report automatically
             try {
                 java.awt.Desktop.getDesktop().browse(htmlPath.toAbsolutePath().toUri());
             } catch (Exception e) {
                 System.err.println("Could not open the HTML report automatically: " + e.getMessage());
             }
-         
 
         } catch (IllegalArgumentException ex) {
             System.err.println("Error: " + ex.getMessage());
