@@ -3,7 +3,7 @@
         "name": "Availability",
         "description": "Measures availability via portability pass rate across configured OS/JDK targets (host + Docker).",
         "metrics": [{
-            "score": 0,
+            "score": 0.8500000000000001,
             "metric": "Portability Pass Rate",
             "findings": [
                 {
@@ -14,30 +14,15 @@
                 {
                     "file": "C:\\Users\\25bra\\local uni\\SENG4430_Project_Group5",
                     "function": "linux-jdk17",
-                    "message": "Target 'linux-jdk17' PASSED. counted in weighted risk (weight=0.55)"
+                    "message": "Target 'linux-jdk17' COMPATIBILITY FAILED (exit-code). counted in weighted risk (weight=0.55) docker: error during connect: Head \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/_ping\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\nRun 'docker run --help' for more information\n"
                 },
                 {
                     "file": "C:\\Users\\25bra\\local uni\\SENG4430_Project_Group5",
                     "function": "linux-jdk21",
-                    "message": "Target 'linux-jdk21' PASSED. counted in weighted risk (weight=0.30)"
+                    "message": "Target 'linux-jdk21' COMPATIBILITY FAILED (exit-code). counted in weighted risk (weight=0.30) docker: error during connect: Head \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/_ping\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\nRun 'docker run --help' for more information\n"
                 }
             ],
             "description": "Measures portability as a weighted compatibility risk across configured JDK/OS targets.",
-            "threshold": null
-        }]
-    },
-    {
-        "name": "Security",
-        "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
-        "metrics": [{
-            "score": 100,
-            "metric": "Dependency Vulnerability Exposure",
-            "findings": [{
-                "file": "C:\\Users\\25bra\\local uni\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
-                "function": "project-wide",
-                "message": "Security summary: dependencies=2, vulnerabilities=0, critical=0, high=0, medium=0, low=0, unknown=0, penalty=0, score=100"
-            }],
-            "description": "Measures security exposure using known vulnerable dependencies from an OWASP Dependency-Check JSON report.",
             "threshold": {"severity": "CRITICAL"}
         }]
     },
@@ -45,7 +30,7 @@
         "name": "Maintainability",
         "description": "Measures the maintainability of the project.",
         "metrics": [{
-            "score": 2.246142741135072,
+            "score": 2.2460983310780334,
             "metric": "Cyclomatic Complexity",
             "findings": [
                 {
@@ -4041,6 +4026,21 @@
             ],
             "description": "Measures the number of linearly independent paths through a program's source code.",
             "threshold": null
+        }]
+    },
+    {
+        "name": "Security",
+        "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
+        "metrics": [{
+            "score": 100,
+            "metric": "Dependency Vulnerability Exposure",
+            "findings": [{
+                "file": "C:\\Users\\25bra\\local uni\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
+                "function": "project-wide",
+                "message": "Security summary: dependencies=2, vulnerabilities=0, critical=0, high=0, medium=0, low=0, unknown=0, penalty=0, score=100"
+            }],
+            "description": "Measures security exposure using known vulnerable dependencies from an OWASP Dependency-Check JSON report.",
+            "threshold": {"severity": "CRITICAL"}
         }]
     }
 ]}
