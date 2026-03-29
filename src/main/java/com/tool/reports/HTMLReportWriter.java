@@ -2,11 +2,15 @@ package com.tool.reports;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.tool.app.AuditResult;
 import com.tool.domain.Category;
 import com.tool.domain.Finding;
+import com.tool.domain.Severity;
 import com.tool.domain.Threshold;
 import com.tool.metrics.Metric;
 import com.tool.metrics.MetricResult;
@@ -370,6 +374,55 @@ public class HTMLReportWriter extends ReportWriter {
                             margin-bottom: 16px;
                         }
 
+                        .metric-thresholds {
+                            display: flex;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            gap: 6px;
+                            background: var(--surface2);
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            padding: 10px 14px;
+                            margin-bottom: 16px;
+                        }
+
+                        .threshold-label {
+                            font-family: var(--mono);
+                            font-size: 9px;
+                            letter-spacing: .18em;
+                            text-transform: uppercase;
+                            color: var(--text-dim);
+                            margin-right: 4px;
+                            flex-shrink: 0;
+                        }
+
+                        .threshold-item {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 5px;
+                            padding: 3px 9px 3px 7px;
+                            border-radius: 2px;
+                            border: 1px solid transparent;
+                            font-family: var(--mono);
+                            font-size: 10px;
+                            letter-spacing: .06em;
+                        }
+
+                        .threshold-item .threshold-sev {
+                            text-transform: uppercase;
+                            font-weight: 700;
+                            letter-spacing: .1em;
+                        }
+                            
+                        .threshold-item .threshold-val {
+                            font-size: 11px;
+                        }
+
+                        .threshold-item.sev-critical { background: var(--critical-dim); border-color: rgba(232,55,42,.35);  color: var(--critical); }
+                        .threshold-item.sev-major    { background: var(--major-dim);    border-color: rgba(232,108,42,.35); color: var(--major); }
+                        .threshold-item.sev-minor    { background: var(--minor-dim);    border-color: rgba(212,170,48,.35); color: var(--minor); }
+                        .threshold-item.sev-info     { background: var(--info-dim);     border-color: rgba(74,144,196,.35); color: var(--info); }
+
                         .findings-table-wrap {
                             border: 1px solid var(--border);
                             border-radius: var(--radius);
@@ -445,7 +498,6 @@ public class HTMLReportWriter extends ReportWriter {
                             left: 0;
                             z-index: 2;
                             background: var(--surface);
-                            color: var(--amber);
                             white-space: normal;
                             word-break: break-all;
                             line-height: 1.5;
@@ -636,6 +688,8 @@ public class HTMLReportWriter extends ReportWriter {
         writeMetricHeader(metric, metricResult, highestThreshold);
         htmlContent.append("<p class='metric-description'>").append(metric.description()).append("</p>");
 
+        writeMetricThresholds(metricResult);
+
         if (!metricResult.findings().isEmpty()) {
             writeFindingsTable(metricResult.findings());
         }
@@ -666,10 +720,34 @@ public class HTMLReportWriter extends ReportWriter {
         htmlContent.append("</div>");
     }
 
+    private void writeMetricThresholds(MetricResult metricResult) {
+        ArrayList<Threshold> thresholds = metricResult.metric().thresholds();
+        if (thresholds.isEmpty()) return;
+
+        htmlContent.append("<div class='metric-thresholds'>");
+        htmlContent.append("<span class='threshold-label'>Thresholds</span>");
+
+        for (Threshold threshold : thresholds) {
+            String sevKey = threshold.toString().toLowerCase();
+            htmlContent.append("<span class='threshold-item sev-").append(sevKey).append("'>")
+                    .append("<span class='threshold-sev'>").append(threshold.toString()).append("</span>")
+                    .append("<span class='threshold-sep'>&#x2265;</span>")
+                    .append("<span class='threshold-val'>").append(threshold.value()).append("</span>")
+                    .append("</span>");
+        }
+
+        htmlContent.append("</div>");
+    }
+
     private void writeFindingsTable(List<Finding> findings) {
+        List<Finding> sorted = findings.stream()
+                .sorted(Comparator.comparingInt(f -> f.severity().ordinal()))
+                .collect(Collectors.toList());
+
         htmlContent.append("<div class='findings-table-wrap'>");
         htmlContent.append("<table>");
         htmlContent.append("<thead><tr>")
+                .append("<th>Severity</th>")
                 .append("<th>Source File</th>")
                 .append("<th>Line</th>")
                 .append("<th>Function / Method</th>")
@@ -677,7 +755,7 @@ public class HTMLReportWriter extends ReportWriter {
                 .append("</tr></thead>");
         htmlContent.append("<tbody>");
 
-        for (Finding finding : findings) {
+        for (Finding finding : sorted) {
             writeFindingRow(finding);
         }
 
@@ -686,6 +764,7 @@ public class HTMLReportWriter extends ReportWriter {
 
     private void writeFindingRow(Finding finding) {
         htmlContent.append("<tr>");
+        htmlContent.append("<td>").append(writeSeverityBadge(finding.severity(), finding.severity().toString())).append("</td>");
         htmlContent.append("<td style='position:relative'>").append(finding.file()).append("</td>");
         htmlContent.append("<td>").append(finding.line()).append("</td>");
         htmlContent.append("<td>").append(finding.function()).append("</td>");
@@ -695,6 +774,12 @@ public class HTMLReportWriter extends ReportWriter {
 
     private String categoryAnchor(Category category) {
         return category.name().replace(" ", "-");
+    }
+
+    private String writeSeverityBadge(Severity severity, String label) {
+        return "<span class='badge badge-" + severity.toString().toLowerCase() + "'>"
+                + label
+                + "</span>";
     }
 
     private String severityClass(Threshold threshold) {

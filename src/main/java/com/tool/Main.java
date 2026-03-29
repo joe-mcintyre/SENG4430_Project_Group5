@@ -22,6 +22,7 @@ public class Main {
                 cli.dependencyReportPath()
             );
 
+            System.out.println("Running Audit");
             AuditResult auditResult = controller.runAudit(cli.sourceRoot(), dependencyReportPath);
 
             System.out.println("Audit complete generating reports...");
