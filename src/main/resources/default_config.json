@@ -6,7 +6,7 @@
       {
         "type": "cyclomatic_complexity",
         "thresholds": {
-          "critical": 14,
+          "critical": 14, 
           "major": 7,
           "minor": 6
         }
@@ -72,9 +72,9 @@
       {
         "type": "dependency_vulnerability_exposure",
         "thresholds": {
-          "critical": 40,
-          "major": 79,
-          "minor": 94
+          "critical": 60,
+          "major": 25,
+          "minor": 10
         }
       }
     ]
