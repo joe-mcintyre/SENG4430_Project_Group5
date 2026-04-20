@@ -28,24 +28,27 @@ public final class DependencyCheckReportResolver {
         System.out.println("Generating fresh Dependency-Check report in: " + reportPath);
 
         boolean generated = tryCommands(projectRoot, reportPath, List.of(
-                List.of("mvn.cmd",
-                        "org.owasp:dependency-check-maven:12.1.0:check",
-                        "-Dformats=JSON",
-                        "-Dodc.outputDirectory=reports",
-                        "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false"),
-                List.of("mvn.bat",
-                        "org.owasp:dependency-check-maven:12.1.0:check",
-                        "-Dformats=JSON",
-                        "-Dodc.outputDirectory=reports",
-                        "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false"),
-                List.of("mvn",
-                        "org.owasp:dependency-check-maven:12.1.0:check",
-                        "-Dformats=JSON",
-                        "-Dodc.outputDirectory=reports",
-                        "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false")
+        List.of("mvn.cmd",
+                "org.owasp:dependency-check-maven:12.1.0:check",
+                "-Dformats=JSON",
+                "-Dodc.outputDirectory=reports",
+                "-DossindexAnalyzerEnabled=false",
+                "-DfailOnError=false",
+                "-DautoUpdate=false"),
+        List.of("mvn.bat",
+                "org.owasp:dependency-check-maven:12.1.0:check",
+                "-Dformats=JSON",
+                "-Dodc.outputDirectory=reports",
+                "-DossindexAnalyzerEnabled=false",
+                "-DfailOnError=false",
+                "-DautoUpdate=false"),
+        List.of("mvn",
+                "org.owasp:dependency-check-maven:12.1.0:check",
+                "-Dformats=JSON",
+                "-Dodc.outputDirectory=reports",
+                "-DossindexAnalyzerEnabled=false",
+                "-DfailOnError=false",
+                "-DautoUpdate=false")
         ));
 
         if (generated && Files.exists(reportPath)) {
