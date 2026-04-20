@@ -17,6 +17,8 @@ import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 
 public class HTMLReportWriter extends ReportWriter {
+    private static final String PROJECT_WIDE_FILE = "project-wide";
+    private static final String PROJECT_WIDE_LABEL = "Project Wide";
 
     private final StringBuilder htmlContent;
     private final Path projectRoot;
@@ -826,6 +828,10 @@ public class HTMLReportWriter extends ReportWriter {
     }
 
     private String renderFileCell(String rawPath) {
+        if (isProjectWideFile(rawPath)) {
+            return PROJECT_WIDE_LABEL;
+        }
+
         String fileName = getFileName(rawPath);
         String relativePath = getRelativePath(rawPath);
 
@@ -844,6 +850,28 @@ public class HTMLReportWriter extends ReportWriter {
                 + "<summary class='file-path-summary'>" + escapedFileName + "</summary>"
                 + "<code class='file-path-full'>" + escapedRelativePath + "</code>"
                 + "</details>";
+    }
+
+    private boolean isProjectWideFile(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return false;
+        }
+
+        String trimmedPath = rawPath.trim();
+        if (PROJECT_WIDE_FILE.equalsIgnoreCase(trimmedPath)) {
+            return true;
+        }
+
+        if (projectRoot == null) {
+            return false;
+        }
+
+        try {
+            return Path.of(trimmedPath).toAbsolutePath().normalize()
+                    .equals(projectRoot.toAbsolutePath().normalize());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private String getFileName(String rawPath) {

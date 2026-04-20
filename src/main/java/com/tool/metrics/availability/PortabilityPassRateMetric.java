@@ -28,6 +28,7 @@ import com.tool.metrics.MetricResult;
 
 public class PortabilityPassRateMetric extends Metric {
 
+    private static final String PROJECT_WIDE_FILE = "project-wide";
     private static final int OUTPUT_LIMIT_CHARS = 200_000;
     private static final int DOCKER_CHECK_TIMEOUT_SECONDS = 10;
 
@@ -109,7 +110,7 @@ public class PortabilityPassRateMetric extends Metric {
                     findings.add(new Finding(
                         Severity.INFO,
                         formatTargetMessage(target, outcome, countedInScore),
-                        executionRoot.toString(),
+                        PROJECT_WIDE_FILE,
                         target.name,
                         null
                     ));
@@ -122,7 +123,7 @@ public class PortabilityPassRateMetric extends Metric {
                     findings.add(new Finding(
                         target.failSeverity,
                         formatTargetMessage(target, outcome, countedInScore),
-                        executionRoot.toString(),
+                        PROJECT_WIDE_FILE,
                         target.name,
                         null
                     ));
@@ -132,7 +133,7 @@ public class PortabilityPassRateMetric extends Metric {
                     findings.add(new Finding(
                         Severity.MAJOR,
                         formatTargetMessage(target, outcome, false),
-                        executionRoot.toString(),
+                        PROJECT_WIDE_FILE,
                         target.name,
                         null
                     ));
@@ -145,7 +146,7 @@ public class PortabilityPassRateMetric extends Metric {
                     findings.add(new Finding(
                         Severity.INFO,
                         formatTargetMessage(target, outcome, countedInScore),
-                        executionRoot.toString(),
+                        PROJECT_WIDE_FILE,
                         target.name,
                         null
                     ));

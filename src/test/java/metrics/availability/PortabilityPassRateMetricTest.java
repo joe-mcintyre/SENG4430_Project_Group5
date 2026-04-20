@@ -53,6 +53,18 @@ public class PortabilityPassRateMetricTest {
     }
 
     @Test
+    void reportsAvailabilityFindingsAsProjectWide() throws Exception {
+        PortabilityPassRateMetric metric = newMetric(new JSONArray()
+            .put(localTarget("supported-pass", "supported", 1.00, javaExecutable(), "-version"))
+        );
+
+        MetricResult result = metric.evaluate(tempDir);
+
+        assertFalse(result.findings().isEmpty());
+        assertTrue(result.findings().stream().allMatch(f -> "project-wide".equals(f.file())));
+    }
+
+    @Test
     void isolatesWorkspacePerTarget() throws Exception {
         PortabilityPassRateMetric metric = newMetric(new JSONArray()
             .put(localTarget(
