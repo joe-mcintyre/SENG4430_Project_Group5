@@ -832,12 +832,13 @@ public class HTMLReportWriter extends ReportWriter {
             return PROJECT_WIDE_LABEL;
         }
 
-        String fileName = getFileName(rawPath);
-        String relativePath = getRelativePath(rawPath);
-
         if (rawPath == null || rawPath.isBlank()) {
             return "N/A";
         }
+
+        String normalizedPath = stripLocationSuffix(rawPath);
+        String fileName = getFileName(normalizedPath);
+        String relativePath = getRelativePath(normalizedPath);
 
         String escapedFileName = escapeHtml(fileName);
         String escapedRelativePath = escapeHtml(relativePath);
@@ -857,7 +858,7 @@ public class HTMLReportWriter extends ReportWriter {
             return false;
         }
 
-        String trimmedPath = rawPath.trim();
+        String trimmedPath = stripLocationSuffix(rawPath).trim();
         if (PROJECT_WIDE_FILE.equalsIgnoreCase(trimmedPath)) {
             return true;
         }
@@ -872,6 +873,14 @@ public class HTMLReportWriter extends ReportWriter {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private String stripLocationSuffix(String rawPath) {
+        if (rawPath == null) {
+            return null;
+        }
+
+        return rawPath.trim().replaceFirst(":(\\d+)(?::\\d+)?$", "");
     }
 
     private String getFileName(String rawPath) {

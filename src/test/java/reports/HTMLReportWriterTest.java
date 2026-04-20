@@ -44,6 +44,31 @@ public class HTMLReportWriterTest {
         assertFalse(html.contains("<summary class='file-path-summary'>project-wide</summary>"));
     }
 
+    @Test
+    void rendersDropdownForPathsWithTrailingLineNumbers() throws Exception {
+        StubMetric metric = new StubMetric();
+        Category category = new Category("Maintainability", "Maintainability metrics", new ArrayList<>(List.of(metric)));
+        metric.setCategory(category);
+
+        Path findingPath = tempDir.resolve("src/main/java/com/example/Example.java");
+        String reportPathValue = findingPath + ":42";
+
+        ArrayList<Finding> findings = new ArrayList<>();
+        findings.add(new Finding(Severity.INFO, "Method complexity", reportPathValue, "exampleMethod", 42));
+
+        AuditResult auditResult = new AuditResult();
+        auditResult.addResult(new MetricResult(metric, 0.0, findings, new ArrayList<>()));
+
+        Path reportPath = tempDir.resolve("quality-report.html");
+        new HTMLReportWriter(reportPath, tempDir).writeReport(auditResult);
+
+        String html = Files.readString(reportPath);
+        assertTrue(html.contains("<details class='file-path-details'>"));
+        assertTrue(html.contains("<summary class='file-path-summary'>Example.java</summary>"));
+        assertTrue(html.contains(Path.of("src", "main", "java", "com", "example", "Example.java").toString()));
+        assertFalse(html.contains(reportPathValue));
+    }
+
     private static final class StubMetric extends Metric {
         private StubMetric() {
             super(new ArrayList<>(), "Stub Metric", "Stub metric description");
