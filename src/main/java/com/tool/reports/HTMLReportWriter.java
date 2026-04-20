@@ -17,12 +17,20 @@ import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 
 public class HTMLReportWriter extends ReportWriter {
+    private static final String PROJECT_WIDE_FILE = "project-wide";
+    private static final String PROJECT_WIDE_LABEL = "Project Wide";
 
-    private StringBuilder htmlContent;
+    private final StringBuilder htmlContent;
+    private final Path projectRoot;
 
     public HTMLReportWriter(Path reportPath) {
+        this(reportPath, null);
+    }
+
+    public HTMLReportWriter(Path reportPath, Path projectRoot) {
         super(reportPath);
         this.htmlContent = new StringBuilder();
+        this.projectRoot = projectRoot;
     }
 
     public void writeReport(AuditResult auditResult) throws Exception {
@@ -413,7 +421,7 @@ public class HTMLReportWriter extends ReportWriter {
                             font-weight: 700;
                             letter-spacing: .1em;
                         }
-                            
+
                         .threshold-item .threshold-val {
                             font-size: 11px;
                         }
@@ -438,7 +446,7 @@ public class HTMLReportWriter extends ReportWriter {
                         .findings-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--amber); }
                         .findings-table-wrap::-webkit-scrollbar-corner { background: var(--surface2); }
 
-                        table { width: 100%; border-collapse: collapse; min-width: 520px; }
+                        table { width: 100%; border-collapse: collapse; min-width: 700px; }
 
                         thead tr {
                             background: var(--surface2);
@@ -475,47 +483,80 @@ public class HTMLReportWriter extends ReportWriter {
                         tbody tr:last-child td { border-bottom: none; }
                         tbody tr:hover td { background: rgba(255,255,255,.02); }
 
-                        td:nth-child(2) { color: var(--text-muted); width: 56px; }
-                        td:nth-child(3) { color: var(--info); }
+                        td:nth-child(3) { color: var(--text-muted); width: 56px; }
+                        td:nth-child(4) { color: var(--info); }
                         td:last-child   { white-space: normal; }
 
-                        /* Source File — sticky, wraps onto multiple lines, draggable width */
-                        th:first-child {
+                        /* Source File column is the SECOND column */
+                        th:nth-child(2) {
                             position: sticky;
                             left: 0;
                             z-index: 4;
                             background: var(--surface2);
                             color: var(--text-dim);
-                            min-width: 160px;
-                            width: 220px;
+                            min-width: 190px;
+                            width: 260px;
                             max-width: 480px;
-                            overflow: hidden;
-                            resize: horizontal;
                         }
 
-                        td:first-child {
+                        td:nth-child(2) {
                             position: sticky;
                             left: 0;
                             z-index: 2;
                             background: var(--surface);
                             white-space: normal;
-                            word-break: break-all;
+                            word-break: break-word;
                             line-height: 1.5;
-                            min-width: 160px;
-                            width: 220px;
+                            min-width: 190px;
+                            width: 260px;
                             max-width: 480px;
                         }
 
-                        tbody tr:hover td:first-child { background: #1a1b1e; }
+                        tbody tr:hover td:nth-child(2) { background: #1a1b1e; }
 
-                        td:first-child::after,
-                        th:first-child::after {
+                        td:nth-child(2)::after,
+                        th:nth-child(2)::after {
                             content: '';
                             position: absolute;
                             top: 0; right: 0; bottom: 0;
                             width: 8px;
                             background: linear-gradient(to right, rgba(0,0,0,0.22), transparent);
                             pointer-events: none;
+                        }
+
+                        .file-path-details {
+                            display: block;
+                        }
+
+                        .file-path-summary {
+                            cursor: pointer;
+                            color: var(--amber);
+                            text-decoration: underline;
+                            list-style: none;
+                            word-break: break-word;
+                        }
+
+                        .file-path-summary::-webkit-details-marker {
+                            display: none;
+                        }
+
+                        .file-path-summary::before {
+                            content: '▶ ';
+                            font-size: 10px;
+                            color: var(--text-muted);
+                        }
+
+                        .file-path-details[open] .file-path-summary::before {
+                            content: '▼ ';
+                        }
+
+                        .file-path-full {
+                            display: block;
+                            margin-top: 6px;
+                            color: var(--text-muted);
+                            font-size: 11px;
+                            white-space: normal;
+                            word-break: break-word;
                         }
 
                         .empty {
@@ -627,7 +668,7 @@ public class HTMLReportWriter extends ReportWriter {
                     .append("' class='sidebar-link'>")
                     .append(String.format("%02d", idx))
                     .append(" &nbsp;")
-                    .append(category.name())
+                    .append(escapeHtml(category.name()))
                     .append("</a>");
         }
     }
@@ -657,7 +698,7 @@ public class HTMLReportWriter extends ReportWriter {
         htmlContent.append("<div class='category-section'>");
         writeCategoryHeader(category, catIdx);
         htmlContent.append("<div class='category-desc'>")
-                .append(category.description())
+                .append(escapeHtml(category.description()))
                 .append("</div>");
 
         for (MetricResult metricResult : auditResult.resultsFor(category)) {
@@ -673,7 +714,7 @@ public class HTMLReportWriter extends ReportWriter {
                 .append(String.format("%02d", catIdx))
                 .append("</span>");
         htmlContent.append("<span class='category-title'>")
-                .append(category.name())
+                .append(escapeHtml(category.name()))
                 .append("</span>");
         htmlContent.append("<div class='category-rule'></div>");
         htmlContent.append("</div>");
@@ -686,7 +727,9 @@ public class HTMLReportWriter extends ReportWriter {
 
         htmlContent.append("<div class='metric-card ").append(sevClass).append("'>");
         writeMetricHeader(metric, metricResult, highestThreshold);
-        htmlContent.append("<p class='metric-description'>").append(metric.description()).append("</p>");
+        htmlContent.append("<p class='metric-description'>")
+                .append(escapeHtml(metric.description()))
+                .append("</p>");
 
         writeMetricThresholds(metricResult);
 
@@ -699,14 +742,16 @@ public class HTMLReportWriter extends ReportWriter {
 
     private void writeMetricHeader(Metric metric, MetricResult metricResult, Threshold highestThreshold) {
         htmlContent.append("<div class='metric-header'>");
-        htmlContent.append("<div class='metric-name'>").append(metric.name()).append("</div>");
+        htmlContent.append("<div class='metric-name'>")
+                .append(escapeHtml(metric.name()))
+                .append("</div>");
         writeMetricBadges(metric, metricResult, highestThreshold);
         htmlContent.append("</div>");
     }
 
     private void writeMetricBadges(Metric metric, MetricResult metricResult, Threshold highestThreshold) {
         String badgeClass = highestThreshold == null ? "success" : highestThreshold.toString().toLowerCase();
-        String badgeText  = highestThreshold == null ? "Pass"    : highestThreshold.toString();
+        String badgeText  = highestThreshold == null ? "Pass" : highestThreshold.toString();
 
         htmlContent.append("<div class='badge-group'>");
         htmlContent.append("<span class='badge badge-score'>")
@@ -715,7 +760,7 @@ public class HTMLReportWriter extends ReportWriter {
                 .append(formatScore(metricResult))
                 .append("</span>");
         htmlContent.append("<span class='badge badge-").append(badgeClass).append("'>")
-                .append(badgeText)
+                .append(escapeHtml(badgeText))
                 .append("</span>");
         htmlContent.append("</div>");
     }
@@ -730,7 +775,7 @@ public class HTMLReportWriter extends ReportWriter {
         for (Threshold threshold : thresholds) {
             String sevKey = threshold.toString().toLowerCase();
             htmlContent.append("<span class='threshold-item sev-").append(sevKey).append("'>")
-                    .append("<span class='threshold-sev'>").append(threshold.toString()).append("</span>")
+                    .append("<span class='threshold-sev'>").append(escapeHtml(threshold.toString())).append("</span>")
                     .append("<span class='threshold-sep'>&#x2265;</span>")
                     .append("<span class='threshold-val'>").append(threshold.value()).append("</span>")
                     .append("</span>");
@@ -764,12 +809,131 @@ public class HTMLReportWriter extends ReportWriter {
 
     private void writeFindingRow(Finding finding) {
         htmlContent.append("<tr>");
-        htmlContent.append("<td>").append(writeSeverityBadge(finding.severity(), finding.severity().toString())).append("</td>");
-        htmlContent.append("<td style='position:relative'>").append(finding.file()).append("</td>");
-        htmlContent.append("<td>").append(finding.line()).append("</td>");
-        htmlContent.append("<td>").append(finding.function()).append("</td>");
-        htmlContent.append("<td>").append(finding.message()).append("</td>");
+        htmlContent.append("<td>")
+                .append(writeSeverityBadge(finding.severity(), finding.severity().toString()))
+                .append("</td>");
+        htmlContent.append("<td style='position:relative'>")
+                .append(renderFileCell(finding.file()))
+                .append("</td>");
+        htmlContent.append("<td>")
+                .append(escapeHtml(safeValue(finding.line())))
+                .append("</td>");
+        htmlContent.append("<td>")
+                .append(escapeHtml(safeValue(finding.function())))
+                .append("</td>");
+        htmlContent.append("<td>")
+                .append(escapeHtml(safeValue(finding.message())))
+                .append("</td>");
         htmlContent.append("</tr>");
+    }
+
+    private String renderFileCell(String rawPath) {
+        if (isProjectWideFile(rawPath)) {
+            return PROJECT_WIDE_LABEL;
+        }
+
+        String fileName = getFileName(rawPath);
+        String relativePath = getRelativePath(rawPath);
+
+        if (rawPath == null || rawPath.isBlank()) {
+            return "N/A";
+        }
+
+        String escapedFileName = escapeHtml(fileName);
+        String escapedRelativePath = escapeHtml(relativePath);
+
+        if (fileName.equals(relativePath)) {
+            return escapedFileName;
+        }
+
+        return "<details class='file-path-details'>"
+                + "<summary class='file-path-summary'>" + escapedFileName + "</summary>"
+                + "<code class='file-path-full'>" + escapedRelativePath + "</code>"
+                + "</details>";
+    }
+
+    private boolean isProjectWideFile(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return false;
+        }
+
+        String trimmedPath = rawPath.trim();
+        if (PROJECT_WIDE_FILE.equalsIgnoreCase(trimmedPath)) {
+            return true;
+        }
+
+        if (projectRoot == null) {
+            return false;
+        }
+
+        try {
+            return Path.of(trimmedPath).toAbsolutePath().normalize()
+                    .equals(projectRoot.toAbsolutePath().normalize());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String getFileName(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return "N/A";
+        }
+
+        try {
+            Path filePath = Path.of(rawPath);
+            Path fileName = filePath.getFileName();
+            return fileName != null ? fileName.toString() : rawPath;
+        } catch (Exception e) {
+            return rawPath;
+        }
+    }
+
+    private String getRelativePath(String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return "N/A";
+        }
+
+        try {
+            Path filePath = Path.of(rawPath).normalize();
+
+            if (projectRoot != null) {
+                Path root = projectRoot.toAbsolutePath().normalize();
+                Path absolutePath = filePath.isAbsolute()
+                        ? filePath.toAbsolutePath().normalize()
+                        : root.resolve(filePath).normalize();
+
+                try {
+                    return root.relativize(absolutePath).toString();
+                } catch (Exception ignored) {
+                }
+            }
+
+            return filePath.toString();
+        } catch (Exception e) {
+            return rawPath;
+        }
+    }
+
+    private String safeValue(Object value) {
+        if (value == null) {
+            return "N/A";
+        }
+
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() || "null".equalsIgnoreCase(text) ? "N/A" : text;
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+
+        return text
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private String categoryAnchor(Category category) {
@@ -778,7 +942,7 @@ public class HTMLReportWriter extends ReportWriter {
 
     private String writeSeverityBadge(Severity severity, String label) {
         return "<span class='badge badge-" + severity.toString().toLowerCase() + "'>"
-                + label
+                + escapeHtml(label)
                 + "</span>";
     }
 

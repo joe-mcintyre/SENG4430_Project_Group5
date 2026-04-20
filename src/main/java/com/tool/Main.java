@@ -33,7 +33,7 @@ public class Main {
             jsonReport.writeReport(auditResult);
 
             Path htmlPath = Paths.get(basePath.toString() + ".html");
-            HTMLReportWriter htmlReport = new HTMLReportWriter(htmlPath);
+            HTMLReportWriter htmlReport = new HTMLReportWriter(htmlPath, cli.sourceRoot());
             htmlReport.writeReport(auditResult);
 
             System.out.println("Audit completed successfully.\nReport can be found: " + cli.outputPath().toAbsolutePath() + ".html");
