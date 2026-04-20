@@ -28,7 +28,6 @@ public final class DependencyCheckReportResolver {
         System.out.println("Generating fresh Dependency-Check report in: " + reportPath);
 
         boolean generated = tryCommands(projectRoot, reportPath, List.of(
-<<<<<<< HEAD
                 List.of("mvn.cmd",
                         "org.owasp:dependency-check-maven:12.1.0:check",
                         "-Dformats=JSON",
@@ -50,29 +49,6 @@ public final class DependencyCheckReportResolver {
                         "-DossindexAnalyzerEnabled=false",
                         "-DfailOnError=false",
                         "-DautoUpdate=false")
-=======
-        List.of("mvn.cmd",
-                "org.owasp:dependency-check-maven:12.1.0:check",
-                "-Dformats=JSON",
-                "-Dodc.outputDirectory=reports",
-                "-DossindexAnalyzerEnabled=false",
-                "-DfailOnError=false",
-                "-DautoUpdate=false"),
-        List.of("mvn.bat",
-                "org.owasp:dependency-check-maven:12.1.0:check",
-                "-Dformats=JSON",
-                "-Dodc.outputDirectory=reports",
-                "-DossindexAnalyzerEnabled=false",
-                "-DfailOnError=false",
-                "-DautoUpdate=false"),
-        List.of("mvn",
-                "org.owasp:dependency-check-maven:12.1.0:check",
-                "-Dformats=JSON",
-                "-Dodc.outputDirectory=reports",
-                "-DossindexAnalyzerEnabled=false",
-                "-DfailOnError=false",
-                "-DautoUpdate=false")
->>>>>>> File-Name-Fix
         ));
 
         if (generated && Files.exists(reportPath)) {

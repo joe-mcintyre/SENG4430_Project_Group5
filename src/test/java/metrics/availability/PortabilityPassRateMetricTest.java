@@ -18,6 +18,7 @@ import com.tool.domain.Threshold;
 import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 import com.tool.util.ConfigLoader;
+import metrics.availability.portability_tests.PortabilityTargetProbe;
 
 public class PortabilityPassRateMetricTest {
 

@@ -27,13 +27,8 @@ import com.tool.metrics.Metric;
 import com.tool.metrics.MetricResult;
 
 public class PortabilityPassRateMetric extends Metric {
-<<<<<<< HEAD
-    private static final int MAX_OUTPUT_CHARS = 200_000;
-=======
-
     private static final String PROJECT_WIDE_FILE = "project-wide";
-    private static final int OUTPUT_LIMIT_CHARS = 200_000;
->>>>>>> File-Name-Fix
+    private static final int MAX_OUTPUT_CHARS = 200_000;
     private static final int DOCKER_CHECK_TIMEOUT_SECONDS = 10;
 
     private final ArrayList<Target> targets;
@@ -95,60 +90,10 @@ public class PortabilityPassRateMetric extends Metric {
                 totalWeight += target.weight;
             }
 
-<<<<<<< HEAD
             if (outcome.status == Status.COMPATIBILITY_FAILED) {
                 failedWeight += countedInScore ? target.weight : 0.0;
             } else if (outcome.status == Status.SKIPPED && countedInScore) {
                 failedWeight += target.weight;
-=======
-            switch (outcome.status) {
-                case PASSED -> {
-                    passed++;
-                    findings.add(new Finding(
-                        Severity.INFO,
-                        formatTargetMessage(target, outcome, countedInScore),
-                        PROJECT_WIDE_FILE,
-                        target.name,
-                        null
-                    ));
-                }
-                case COMPATIBILITY_FAILED -> {
-                    compatibilityFailed++;
-                    if (countedInScore) {
-                        weightedCompatibilityFailures += target.weight;
-                    }
-                    findings.add(new Finding(
-                        target.failSeverity,
-                        formatTargetMessage(target, outcome, countedInScore),
-                        PROJECT_WIDE_FILE,
-                        target.name,
-                        null
-                    ));
-                }
-                case INFRASTRUCTURE_FAILED -> {
-                    infrastructureFailed++;
-                    findings.add(new Finding(
-                        Severity.MAJOR,
-                        formatTargetMessage(target, outcome, false),
-                        PROJECT_WIDE_FILE,
-                        target.name,
-                        null
-                    ));
-                }
-                case SKIPPED -> {
-                    skipped++;
-                    if (countedInScore) {
-                        weightedCompatibilityFailures += target.weight;
-                    }
-                    findings.add(new Finding(
-                        Severity.INFO,
-                        formatTargetMessage(target, outcome, countedInScore),
-                        PROJECT_WIDE_FILE,
-                        target.name,
-                        null
-                    ));
-                }
->>>>>>> File-Name-Fix
             }
 
             findings.add(createFinding(target, outcome, executionRoot, countedInScore));
@@ -563,7 +508,7 @@ public class PortabilityPassRateMetric extends Metric {
         return new Finding(
             severity,
             message,
-            executionRoot.toString(),
+            PROJECT_WIDE_FILE,
             target.name,
             null
         );

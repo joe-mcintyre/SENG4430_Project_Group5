@@ -3,7 +3,7 @@
         "name": "Maintainability",
         "description": "Measures the maintainability of the project.",
         "metrics": [{
-            "score": 2.451063829787234,
+            "score": 2.4426877470355732,
             "metric": "Cyclomatic Complexity",
             "findings": [
                 {
@@ -19,56 +19,56 @@
                     "message": "The method \"parseArgs\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:59",
-                    "line": 59,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:60",
+                    "line": 60,
                     "function": "evaluate",
                     "message": "The method \"evaluate\" has a cyclomatic complexity of 11"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:105",
-                    "line": 105,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:106",
+                    "line": 106,
                     "function": "executeTarget",
                     "message": "The method \"executeTarget\" has a cyclomatic complexity of 8"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:186",
-                    "line": 186,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:187",
+                    "line": 187,
                     "function": "normalizeLocalCommand",
                     "message": "The method \"normalizeLocalCommand\" has a cyclomatic complexity of 10"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:245",
-                    "line": 245,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:246",
+                    "line": 246,
                     "function": "startReader",
                     "message": "The method \"startReader\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:274",
-                    "line": 274,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:275",
+                    "line": 275,
                     "function": "probeDocker",
                     "message": "The method \"probeDocker\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:303",
-                    "line": 303,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:304",
+                    "line": 304,
                     "function": "loadTargets",
                     "message": "The method \"loadTargets\" has a cyclomatic complexity of 12"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:383",
-                    "line": 383,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:384",
+                    "line": 384,
                     "function": "findExecutionRoot",
                     "message": "The method \"findExecutionRoot\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:489",
-                    "line": 489,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:490",
+                    "line": 490,
                     "function": "createFinding",
                     "message": "The method \"createFinding\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:516",
-                    "line": 516,
+                    "file": ".\\src\\main\\java\\com\\tool\\metrics\\availability\\PortabilityPassRateMetric.java:517",
+                    "line": 517,
                     "function": "formatTargetMessage",
                     "message": "The method \"formatTargetMessage\" has a cyclomatic complexity of 7"
                 },
@@ -95,6 +95,18 @@
                     "line": 235,
                     "function": "extractCvssScore",
                     "message": "The method \"extractCvssScore\" has a cyclomatic complexity of 8"
+                },
+                {
+                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:855",
+                    "line": 855,
+                    "function": "isProjectWideFile",
+                    "message": "The method \"isProjectWideFile\" has a cyclomatic complexity of 6"
+                },
+                {
+                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:891",
+                    "line": 891,
+                    "function": "getRelativePath",
+                    "message": "The method \"getRelativePath\" has a cyclomatic complexity of 7"
                 },
                 {
                     "file": ".\\src\\main\\java\\com\\tool\\util\\ConfigLoader.java:142",
@@ -156,44 +168,44 @@
         }]
     },
     {
-        "name": "Availability",
-        "description": "Measures availability via portability pass rate across configured OS/JDK targets (host + Docker).",
-        "metrics": [{
-            "score": 0.8500000000000001,
-            "metric": "Portability Pass Rate",
-            "findings": [
-                {
-                    "file": "C:\\Users\\25bra\\repos\\SENG4430_Project_Group5",
-                    "function": "host-jdk17",
-                    "message": "Target 'host-jdk17' PASSED. counted in weighted risk (weight=0.15)"
-                },
-                {
-                    "file": "C:\\Users\\25bra\\repos\\SENG4430_Project_Group5",
-                    "function": "linux-jdk17",
-                    "message": "Target 'linux-jdk17' COMPATIBILITY FAILED (exit-code). counted in weighted risk (weight=0.55) docker: error during connect: Head \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/_ping\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\nRun 'docker run --help' for more information\n"
-                },
-                {
-                    "file": "C:\\Users\\25bra\\repos\\SENG4430_Project_Group5",
-                    "function": "linux-jdk21",
-                    "message": "Target 'linux-jdk21' COMPATIBILITY FAILED (exit-code). counted in weighted risk (weight=0.30) docker: error during connect: Head \"http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/_ping\": open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n\nRun 'docker run --help' for more information\n"
-                }
-            ],
-            "description": "Measures portability as a weighted compatibility risk across configured JDK/OS targets.",
-            "threshold": {"severity": "CRITICAL"}
-        }]
-    },
-    {
         "name": "Security",
         "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
         "metrics": [{
             "score": 0,
             "metric": "Dependency Vulnerability Exposure",
             "findings": [{
-                "file": "C:\\Users\\25bra\\repos\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
+                "file": "C:\\repos\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
                 "function": "project-wide",
                 "message": "Security summary: dependencies=2, vulnerabilities=0, critical=0, high=0, medium=0, low=0, unknown=0, penalty=0, exposure=0"
             }],
             "description": "Measures security exposure using known vulnerable dependencies from an OWASP Dependency-Check JSON report.",
+            "threshold": {"severity": "INFO"}
+        }]
+    },
+    {
+        "name": "Availability",
+        "description": "Measures availability via portability pass rate across configured OS/JDK targets (host + Docker).",
+        "metrics": [{
+            "score": 0,
+            "metric": "Portability Pass Rate",
+            "findings": [
+                {
+                    "file": "project-wide",
+                    "function": "host-jdk17",
+                    "message": "Target 'host-jdk17' PASSED. counted in weighted risk (weight=0.15)"
+                },
+                {
+                    "file": "project-wide",
+                    "function": "linux-jdk17",
+                    "message": "Target 'linux-jdk17' INFRASTRUCTURE FAILED (Docker daemon check failed: \nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n). "
+                },
+                {
+                    "file": "project-wide",
+                    "function": "linux-jdk21",
+                    "message": "Target 'linux-jdk21' INFRASTRUCTURE FAILED (Docker daemon check failed: \nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n). "
+                }
+            ],
+            "description": "Measures portability as a weighted compatibility risk across configured JDK/OS targets.",
             "threshold": null
         }]
     }
