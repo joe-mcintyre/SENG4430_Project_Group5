@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
-import com.tool.domain.Severity;
 import com.tool.domain.Threshold;
 import com.tool.metrics.MetricResult;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
@@ -23,7 +22,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Empty.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(1, res.score(), 0.00001, "Empty functions should be 1");
+        assertEquals(1, res.score(), 0.00001);
     }
 
     @Test
@@ -32,7 +31,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\EmptyAverage.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(1, res.score(), 0.00001, "Empty functions should be 1");
+        assertEquals(1, res.score(), 0.00001);
     }
     
     @Test
@@ -41,7 +40,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Average1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals((double)(2 + 1 + 1) / 3, res.score(), 0.1, "1 conditional and 2 trivial functions should be 1.33");
+        assertEquals((double)(2 + 1 + 1) / 3, res.score());
     }
 
     // Conditionals and decisions
@@ -51,7 +50,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Decision1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(4, res.score(), 0.1, "Deeply nested decisions");
+        assertEquals(4, res.score(), 0.1);
     }
 
     @Test
@@ -60,7 +59,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Decision2.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(4, res.score(), 0.1, "Deeply nested decisions");
+        assertEquals(4, res.score(), 0.1);
     }
     
     @Test
@@ -69,7 +68,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Conditional1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(5, res.score(), 0.1, "Nested conditionals");
+        assertEquals(5, res.score(), 0.1);
     }
 
     @Test
@@ -78,7 +77,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Conditional2.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(5, res.score(), 0.1, "Nested conditionals");
+        assertEquals(5, res.score(), 0.1);
     }
 
     @Test
@@ -87,7 +86,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Conditional3.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(3, res.score(), 0.1, "Nested conditionals");
+        assertEquals(3, res.score(), 0.1);
     }
 
     @Test
@@ -96,7 +95,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Switch1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(7, res.score(), 0.1, "Nested conditionals");
+        assertEquals(7, res.score(), 0.1);
     }
 
     @Test
@@ -105,7 +104,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Switch2.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(9, res.score(), 0.1, "Nested conditionals");
+        assertEquals(9, res.score(), 0.1);
     }
     
     @Test
@@ -114,7 +113,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\TryCatch1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(2, res.score(), 0.1, "Nested conditionals");
+        assertEquals(2, res.score(), 0.1);
     }
     
     @Test
@@ -123,7 +122,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\TryCatch2.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(4, res.score(), 0.1, "Nested conditionals");
+        assertEquals(4, res.score(), 0.1);
     }
 
     @Test
@@ -132,7 +131,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Complex1.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(5, res.score(), 0.1, "Nested conditionals");
+        assertEquals(5, res.score(), 0.1);
     }
 
     @Test
@@ -141,7 +140,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\Complex2.java");
         MetricResult res = c.evaluate(p);
-        assertEquals((double)(5 + 6) / 2, res.score(), 0.1, "Nested conditionals");
+        assertEquals((double)(5 + 6) / 2, res.score(), 0.1);
     }
     // Edge cases 
     @Test
@@ -150,7 +149,7 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\NotValidJava.java");
         MetricResult res = c.evaluate(p);
-        assertEquals(0, res.score(), 0.1, "Failed java files should not be checked");
+        assertEquals(0, res.score(), 0.1);
     }
 
     @Test
@@ -159,6 +158,6 @@ public class CyclomaticComplexityTest {
         CyclomaticComplexityMetric c = new CyclomaticComplexityMetric(thresholds);
         Path p = ResourceUtil.getResourcePath("metrics\\maintainability\\cyclomatic_complexity\\NotJava.c");
         MetricResult res = c.evaluate(p);
-        assertEquals(0, res.score(), 0.1, "None java files should not be checked");
+        assertEquals(0, res.score(), 0.1);
     }
 }

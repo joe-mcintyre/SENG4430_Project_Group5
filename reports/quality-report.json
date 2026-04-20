@@ -3,7 +3,7 @@
         "name": "Maintainability",
         "description": "Measures the maintainability of the project.",
         "metrics": [{
-            "score": 2.4426877470355732,
+            "score": 2.4352941176470586,
             "metric": "Cyclomatic Complexity",
             "findings": [
                 {
@@ -97,14 +97,14 @@
                     "message": "The method \"extractCvssScore\" has a cyclomatic complexity of 8"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:855",
-                    "line": 855,
+                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:856",
+                    "line": 856,
                     "function": "isProjectWideFile",
                     "message": "The method \"isProjectWideFile\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:891",
-                    "line": 891,
+                    "file": ".\\src\\main\\java\\com\\tool\\reports\\HTMLReportWriter.java:900",
+                    "line": 900,
                     "function": "getRelativePath",
                     "message": "The method \"getRelativePath\" has a cyclomatic complexity of 7"
                 },
@@ -168,21 +168,6 @@
         }]
     },
     {
-        "name": "Security",
-        "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
-        "metrics": [{
-            "score": 0,
-            "metric": "Dependency Vulnerability Exposure",
-            "findings": [{
-                "file": "C:\\repos\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
-                "function": "project-wide",
-                "message": "Security summary: dependencies=2, vulnerabilities=0, critical=0, high=0, medium=0, low=0, unknown=0, penalty=0, exposure=0"
-            }],
-            "description": "Measures security exposure using known vulnerable dependencies from an OWASP Dependency-Check JSON report.",
-            "threshold": {"severity": "INFO"}
-        }]
-    },
-    {
         "name": "Availability",
         "description": "Measures availability via portability pass rate across configured OS/JDK targets (host + Docker).",
         "metrics": [{
@@ -197,16 +182,31 @@
                 {
                     "file": "project-wide",
                     "function": "linux-jdk17",
-                    "message": "Target 'linux-jdk17' INFRASTRUCTURE FAILED (Docker daemon check failed: \nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n). "
+                    "message": "Target 'linux-jdk17' PASSED. counted in weighted risk (weight=0.55)"
                 },
                 {
                     "file": "project-wide",
                     "function": "linux-jdk21",
-                    "message": "Target 'linux-jdk21' INFRASTRUCTURE FAILED (Docker daemon check failed: \nfailed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.\n). "
+                    "message": "Target 'linux-jdk21' PASSED. counted in weighted risk (weight=0.30)"
                 }
             ],
             "description": "Measures portability as a weighted compatibility risk across configured JDK/OS targets.",
             "threshold": null
+        }]
+    },
+    {
+        "name": "Security",
+        "description": "Measures dependency vulnerability exposure using an OWASP Dependency-Check JSON report.",
+        "metrics": [{
+            "score": 0,
+            "metric": "Dependency Vulnerability Exposure",
+            "findings": [{
+                "file": "C:\\Users\\25bra\\repos\\SENG4430_Project_Group5\\reports\\dependency-check-report.json",
+                "function": "project-wide",
+                "message": "Security summary: dependencies=2, vulnerabilities=0, critical=0, high=0, medium=0, low=0, unknown=0, penalty=0, exposure=0"
+            }],
+            "description": "Measures security exposure using known vulnerable dependencies from an OWASP Dependency-Check JSON report.",
+            "threshold": {"severity": "INFO"}
         }]
     }
 ]}
