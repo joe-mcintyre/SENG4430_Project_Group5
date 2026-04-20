@@ -8,7 +8,8 @@
         "thresholds": {
           "critical": 14, 
           "major": 7,
-          "minor": 6
+          "minor": 6,
+          "info": 5
         }
       }
     ]
@@ -74,7 +75,8 @@
         "thresholds": {
           "critical": 60,
           "major": 25,
-          "minor": 10
+          "minor": 10,
+          "info": 0
         }
       }
     ]
