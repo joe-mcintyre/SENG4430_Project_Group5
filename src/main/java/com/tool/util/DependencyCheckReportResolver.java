@@ -33,19 +33,22 @@ public final class DependencyCheckReportResolver {
                         "-Dformats=JSON",
                         "-Dodc.outputDirectory=reports",
                         "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false"),
+                        "-DfailOnError=false",
+                        "-DautoUpdate=false"),
                 List.of("mvn.bat",
                         "org.owasp:dependency-check-maven:12.1.0:check",
                         "-Dformats=JSON",
                         "-Dodc.outputDirectory=reports",
                         "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false"),
+                        "-DfailOnError=false",
+                        "-DautoUpdate=false"),
                 List.of("mvn",
                         "org.owasp:dependency-check-maven:12.1.0:check",
                         "-Dformats=JSON",
                         "-Dodc.outputDirectory=reports",
                         "-DossindexAnalyzerEnabled=false",
-                        "-DfailOnError=false")
+                        "-DfailOnError=false",
+                        "-DautoUpdate=false")
         ));
 
         if (generated && Files.exists(reportPath)) {
