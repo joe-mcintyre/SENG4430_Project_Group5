@@ -95,11 +95,6 @@ abstract class PortabilityMetricTestSupport {
         return localTarget(name, supportLevel, weight, timeoutSeconds, command.toArray(String[]::new));
     }
 
-    protected void writeMinimalPom(Path root) throws Exception {
-        Files.createDirectories(root);
-        Files.writeString(root.resolve("pom.xml"), "<project/>");
-    }
-
     protected String javaExecutable() {
         String executable = System.getProperty("os.name", "")
             .toLowerCase()

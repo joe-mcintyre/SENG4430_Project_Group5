@@ -18,6 +18,9 @@ import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 import com.tool.util.ConfigLoader;
 
+import test.java.util.TestUtils;
+
+
 // These make sure the metric still plugs into the actual config loader flow properly.
 public class PortabilityPassRateMetricIntegrationTest extends PortabilityMetricTestSupport {
 
@@ -25,7 +28,7 @@ public class PortabilityPassRateMetricIntegrationTest extends PortabilityMetricT
     void loadsPortabilityMetricFromConfigAndEvaluatesIt() throws Exception {
         // Build a tiny config on the fly so we are testing the real wiring, not a mocked version of it.
         Files.createDirectories(tempDir.resolve("src/main/java"));
-        writeMinimalPom(tempDir);
+        TestUtils.writeMinimalPom(tempDir);
 
         JSONArray config = new JSONArray().put(new JSONObject()
             .put("category", "Availability")

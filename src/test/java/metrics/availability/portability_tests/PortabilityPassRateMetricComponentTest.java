@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 
+import test.java.util.TestUtils;
+
 // These sit a bit above unit tests and check how the moving pieces behave together.
 public class PortabilityPassRateMetricComponentTest extends PortabilityMetricTestSupport {
 
@@ -31,7 +33,7 @@ public class PortabilityPassRateMetricComponentTest extends PortabilityMetricTes
     @Test
     void resolvesExecutionRootFromNestedSourcePath() throws Exception {
         Files.createDirectories(tempDir.resolve("src/main/java"));
-        writeMinimalPom(tempDir);
+        TestUtils.writeMinimalPom(tempDir);
 
         PortabilityPassRateMetric metric = newMetric(new JSONArray()
             .put(probeTarget("check-pom", "supported", 1.0, "assert-exists", "pom.xml"))
