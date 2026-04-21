@@ -48,7 +48,7 @@ public class HTMLReportWriter extends ReportWriter {
                     <title>Audit Report — Automotive</title>
                     <link rel="preconnect" href="https://fonts.googleapis.com">
                     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-                    <link rel="stylesheet" href="HTMLReport.css">
+                    <link rel="stylesheet" href="quality-report.css">
                 </head>
                 <body>
 
@@ -92,7 +92,7 @@ public class HTMLReportWriter extends ReportWriter {
         Files.writeString(reportPath, html.toString());
 
         // Copy css
-        Path cssPath = reportPath.getParent().resolve("HTMLReport.css");
+        Path cssPath = reportPath.getParent().resolve("quality-report.css");
         Files.copy(
             ResourceUtil.getResourcePath("HTMLReport.css"),
             cssPath,
