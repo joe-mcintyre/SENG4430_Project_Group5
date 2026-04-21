@@ -52,16 +52,32 @@ public class ConfigLoader {
      * @throws RuntimeException if the default config cannot be loaded or if the provided config path is invalid
      */
     public static Path resolveConfigPath(String configArg) {
-        if(configArg != null){
-            Path providedPath = ResourceUtil.getResourcePath(configArg);
-            if (providedPath == null || !Files.exists(providedPath)) {
-                throw new RuntimeException("Provided config file does not exist: " + configArg);
+        if (configArg != null) {
+
+            Path path = Path.of(configArg);
+
+            if (Files.exists(path)) {
+                return path;
             }
-            return providedPath;
+
+            Path resourcePath = ResourceUtil.getResourcePath(configArg);
+            if (resourcePath != null && Files.exists(resourcePath)) {
+                return resourcePath;
+            }
+
+            throw new RuntimeException(
+                "Provided config file does not exist: " + configArg
+            );
         }
 
-        return ResourceUtil.getResourcePath("default_config.json");
-       
+        // Default config from resources
+        Path defaultPath = ResourceUtil.getResourcePath("default_config.json");
+
+        if (defaultPath == null || !Files.exists(defaultPath)) {
+            throw new RuntimeException("Default config file not found");
+        }
+
+        return defaultPath;
     }
 
     /**

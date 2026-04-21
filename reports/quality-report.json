@@ -3,7 +3,7 @@
         "name": "Maintainability",
         "description": "Measures the maintainability of the project.",
         "metrics": [{
-            "score": 2.8693009118541033,
+            "score": 2.8507462686567164,
             "metric": "Cyclomatic Complexity",
             "findings": [
                 {
@@ -13,8 +13,8 @@
                     "message": "The method \"runAudit\" has a cyclomatic complexity of 6"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\cli\\CliArgs.java:59",
-                    "line": 59,
+                    "file": ".\\src\\main\\java\\com\\tool\\cli\\CliArgs.java:64",
+                    "line": 64,
                     "function": "parseArgs",
                     "message": "The method \"parseArgs\" has a cyclomatic complexity of 6"
                 },
@@ -109,8 +109,14 @@
                     "message": "The method \"getRelativePath\" has a cyclomatic complexity of 7"
                 },
                 {
-                    "file": ".\\src\\main\\java\\com\\tool\\util\\ConfigLoader.java:142",
-                    "line": 142,
+                    "file": ".\\src\\main\\java\\com\\tool\\util\\ConfigLoader.java:54",
+                    "line": 54,
+                    "function": "resolveConfigPath",
+                    "message": "The method \"resolveConfigPath\" has a cyclomatic complexity of 7"
+                },
+                {
+                    "file": ".\\src\\main\\java\\com\\tool\\util\\ConfigLoader.java:158",
+                    "line": 158,
                     "function": "resolveThresholds",
                     "message": "The method \"resolveThresholds\" has a cyclomatic complexity of 10"
                 },

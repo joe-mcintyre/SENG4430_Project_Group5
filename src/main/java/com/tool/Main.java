@@ -38,14 +38,14 @@ public class Main {
 
             System.out.println("Audit completed successfully.\nReport can be found: " + cli.outputPath().toAbsolutePath() + ".html");
 
-            // Open the HTML report automatically
-            try {
-                java.awt.Desktop.getDesktop().browse(htmlPath.toAbsolutePath().toUri());
-            } catch (Exception e) {
-                System.err.println("Could not open the HTML report automatically: " + e.getMessage());
+            if(cli.shouldOpenReport()) {
+                // Open the HTML report automatically
+                try {
+                    java.awt.Desktop.getDesktop().browse(htmlPath.toAbsolutePath().toUri());
+                } catch (Exception e) {
+                    System.err.println("Could not open the HTML report automatically: " + e.getMessage());
+                }
             }
-         
-
         } catch (IllegalArgumentException ex) {
             System.err.println("Error: " + ex.getMessage());
             System.err.println();
@@ -53,7 +53,6 @@ public class Main {
             System.exit(2);
         } catch (Exception ex) {
             System.err.println("Audit failed: " + ex.getMessage());
-            ex.printStackTrace(System.err);
             System.exit(1);
         }
     }

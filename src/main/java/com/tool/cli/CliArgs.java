@@ -7,23 +7,26 @@ import java.util.Map;
 
 import com.tool.util.ConfigLoader;
 
-public final class CliArgs {
+public class CliArgs {
     private final String projectName;
     private final Path sourceRoot;
     private final Path dependencyReportPath;
     private final Path configPath;
     private final Path outputPath;
+    private final boolean shouldOpenReport;
 
     private CliArgs(String projectName,
                     Path sourceRoot,
                     Path dependencyReportPath,
                     Path configPath,
-                    Path outputPath) {
+                    Path outputPath,
+                    boolean shouldOpenReport) {
         this.projectName = projectName;
         this.sourceRoot = sourceRoot;
         this.dependencyReportPath = dependencyReportPath;
         this.configPath = configPath;
         this.outputPath = outputPath;
+        this.shouldOpenReport = shouldOpenReport;
     }
 
     public static CliArgs parse(String[] args) {
@@ -53,7 +56,9 @@ public final class CliArgs {
 
         String projectName = values.getOrDefault("--project", defaultProject);
 
-        return new CliArgs(projectName, sourcePath, dependencyReportPath, configPath, outputPath);
+        boolean shouldOpenReport = Boolean.parseBoolean(values.getOrDefault("--should-open-report", "true"));
+
+        return new CliArgs(projectName, sourcePath, dependencyReportPath, configPath, outputPath, shouldOpenReport);
     }
 
     private static Map<String, String> parseArgs(String[] args) {
@@ -116,6 +121,10 @@ public final class CliArgs {
 
     public Path outputPath() {
         return outputPath;
+    }
+
+    public boolean shouldOpenReport() {
+        return shouldOpenReport;
     }
 
     public static String usage() {
