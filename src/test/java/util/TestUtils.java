@@ -1,4 +1,4 @@
-package test.java.util;
+package util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

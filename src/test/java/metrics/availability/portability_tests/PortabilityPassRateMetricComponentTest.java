@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 
-import test.java.util.TestUtils;
+import util.TestUtils;
 
 // These sit a bit above unit tests and check how the moving pieces behave together.
 public class PortabilityPassRateMetricComponentTest extends PortabilityMetricTestSupport {

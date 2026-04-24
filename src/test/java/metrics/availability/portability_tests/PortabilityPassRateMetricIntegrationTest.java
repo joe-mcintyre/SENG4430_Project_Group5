@@ -18,7 +18,7 @@ import com.tool.metrics.MetricResult;
 import com.tool.metrics.availability.PortabilityPassRateMetric;
 import com.tool.util.ConfigLoader;
 
-import test.java.util.TestUtils;
+import util.TestUtils;
 
 
 // These make sure the metric still plugs into the actual config loader flow properly.

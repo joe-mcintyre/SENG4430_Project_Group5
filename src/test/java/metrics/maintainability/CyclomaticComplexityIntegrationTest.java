@@ -20,9 +20,8 @@ import com.tool.metrics.Metric;
 import com.tool.metrics.MetricResult;
 import com.tool.metrics.maintainability.CyclomaticComplexityMetric;
 import com.tool.util.ConfigLoader;
-import com.tool.util.ResourceUtil;
 
-import test.java.util.TestUtils;
+import util.TestUtils;
 
 public class CyclomaticComplexityIntegrationTest {
     ArrayList<Threshold> thresholds;
