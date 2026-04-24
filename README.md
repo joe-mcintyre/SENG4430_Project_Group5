@@ -1,4 +1,14 @@
-# SENG4430_Project_Group5
+# SENG4430_Project_Group5: Automative Industry Software Quality Auditing Tool
+
+## Team Members
+
+| Name | Student Number | GitHub Username |
+| :--- | :---: | ---: |
+| Joe McIntyre  | 3429578 | joe-mcintyre |
+| Brandon Ballard | 3429564 | Brandon-Ballard25  |
+| Brandon Cave | 3305287 | Bc0706 |
+
+
 
 ```
               ____----------- _____
@@ -17,6 +27,11 @@
 ```
 
 # Family
+
+# Run Test Cases
+
+To run the project test suite, run `mvn package`.
+The list of 64 test cases will be run and displayed in the terminal.
 
 # Build Tool
 
