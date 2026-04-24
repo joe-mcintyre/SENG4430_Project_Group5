@@ -10,7 +10,7 @@ import com.tool.util.ConfigLoader;
 public class CliArgs {
     private final String projectName;
     private final Path sourceRoot;
-    private final Path dependencyReportPath;
+    private final Path dependencyReportPath; //Path to the dep report. Security metric needs this to run, if null security is skipped
     private final Path configPath;
     private final Path outputPath;
     private final boolean shouldOpenReport;
@@ -23,7 +23,7 @@ public class CliArgs {
                     boolean shouldOpenReport) {
         this.projectName = projectName;
         this.sourceRoot = sourceRoot;
-        this.dependencyReportPath = dependencyReportPath;
+        this.dependencyReportPath = dependencyReportPath;   //Store this to be used later for security metric
         this.configPath = configPath;
         this.outputPath = outputPath;
         this.shouldOpenReport = shouldOpenReport;
@@ -42,7 +42,7 @@ public class CliArgs {
         }
 
         Path sourcePath = Paths.get(source);
-        Path dependencyReportPath = resolveDependencyReportPath(
+        Path dependencyReportPath = resolveDependencyReportPath( //Looking for OWASP Dependency report path. Multiple names supported. Helps for testing
                 sourcePath,
                 firstPresent(values, "--dependency-report", "--depcheck-report", "--dependencycheck-report", "-d")
         );
@@ -96,6 +96,7 @@ public class CliArgs {
         return null;
     }
 
+    //If user provides a path, its turned into object, otherwise it returns null
     private static Path resolveDependencyReportPath(Path sourcePath, String raw) {
         if (raw != null && !raw.isBlank()) {
             return Paths.get(raw);
@@ -111,6 +112,7 @@ public class CliArgs {
         return sourceRoot;
     }
 
+    //Controller/audit pipeline have access to optional report path
     public Path dependencyReportPath() {
         return dependencyReportPath;
     }
